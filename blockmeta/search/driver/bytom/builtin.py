@@ -23,6 +23,7 @@ class BuiltinDriver:
         self.mongo_cli.use_db(FLAGS.mongo_bytom)
 
     def search(self, info):
+        info.strip().lower()
         try:
             if HEIGHT_RE.match(info):
                 return {'type': 'block', 'value': info}
