@@ -22,7 +22,13 @@ class BuiltinDriver:
 
     def _show_addr(self, addr, page):
         if addr is None:
-            return addr
+            return {
+                'balance': 0,
+                'sent': 0,
+                'recv': 0,
+                'tx_num': 0,
+                'txs': []
+            }
 
         fields = ['balance', 'sent', 'recv']
         result = {}
