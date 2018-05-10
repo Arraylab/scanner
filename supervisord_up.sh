@@ -7,6 +7,3 @@ sudo touch /var/run/supervisor.sock
 sudo unlink /var/run/supervisor.sock
 
 sudo supervisord -c $(pwd)/supervisord.conf
-sudo supervisorctl start all
-
-
