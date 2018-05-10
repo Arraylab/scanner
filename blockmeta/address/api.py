@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from flask_restful import Resource, reqparse
+from flask_restful import Resource, reqparse, abort
 
+from blockmeta.utils.util import valid_addr
 from manager import AddressManager
 from tools import flags
 
@@ -21,5 +22,7 @@ class AddressAPI(Resource):
         if not isinstance(page, int) or page <= 0:
             page = 1
 
-        result = self.manager.handle_address(address, page) if address else {}
-        return result
+        if not valid_addr(address):
+            abort(400, message="invalid address")
+
+        return self.manager.handle_address(address, page)

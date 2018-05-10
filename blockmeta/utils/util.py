@@ -47,6 +47,7 @@ ERROR_MSG = {
 ADDRESS_42_RE = re.compile('bm1[02-9ac-hj-np-z]{39}\\Z')
 ADDRESS_62_RE = re.compile('bm1[02-9ac-hj-np-z]{59}\\Z')
 
+
 def wrap_response(data='', status='success', code='200', message='', **kwargs):
     return dict(status=status, data=data, code=code, message=message)
 
@@ -56,6 +57,7 @@ def wrap_error_response(message='', data='', status='failure', code='500'):
     response = ERROR_MSG[lang][message]
     print response
     return dict(status=status, data=data, code=code, message=response)
+
 
 def valid_addr(addr):
     addr.strip().lower()
