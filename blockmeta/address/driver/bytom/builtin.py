@@ -16,6 +16,7 @@ class BuiltinDriver:
         self.mongo_cli.use_db(FLAGS.mongo_bytom)
 
     def request_address_info(self, addr, page=1):
+        addr.strip().lower()
         addr_object = self.mongo_cli.get_one(table=FLAGS.address_info, cond={FLAGS.address: addr})
         addr_info = self._show_addr(addr_object, page)
         return addr_info
