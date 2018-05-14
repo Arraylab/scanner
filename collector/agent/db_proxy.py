@@ -27,7 +27,6 @@ class DbProxy:
             transactions.append(transaction)
         self.mongo_cli.insert_many(flags.FLAGS.transaction_info, transactions)
         self.index_address(block)
-
         self.set_height(block['height'])
 
     def index_address(self, block):
@@ -79,15 +78,6 @@ class DbProxy:
 
         self.save_address_info(address_dict, block['hash'])
 
-    # def remove_highest_block(self, block):
-    #     current_block_height = self.get_height()
-    #     if current_block_height != block['height']:
-    #         raise Exception('the block to be removed is not the highest one')
-    #
-    #     self.mongo_cli.delete_one(flags.FLAGS.block_info, {'height': current_block_height})
-    #     self.mongo_cli.delete_many(flags.FLAGS.transaction_info, {'block_height': current_block_height})
-    #     self.rollback_address_info(block)
-
     def remove_highest_block(self, block):
         current_block_hash = block['hash']
         self.rollback_address_info(block)
@@ -103,7 +93,7 @@ class DbProxy:
 
                 address = tx_input.get('address')
                 if not address or self.mongo_cli.get_one(
-                        flags.FLAGS.address_info, {'address': address, 'block_hash': {'$ne': block['hash']}}):
+                        flags.FLAGS.address_info, {'address': address, 'block_hash': block['hash']}) is None:
                     continue
 
                 address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
@@ -120,7 +110,7 @@ class DbProxy:
 
                 address = tx_output.get('address')
                 if not address or self.mongo_cli.get_one(
-                        flags.FLAGS.address_info, {'address': address, 'block_hash': {'$ne': block['hash']}}):
+                        flags.FLAGS.address_info, {'address': address, 'block_hash': block['hash']}) is None:
                     continue
 
                 address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
@@ -131,11 +121,15 @@ class DbProxy:
                     address_info['txs'].remove(transaction['id'])
                 address_dict[address] = address_info
 
-        self.save_address_info(address_dict, block['hash'])
+        self.save_address_info(address_dict, block['previous_block_hash'])
 
     def save_address_info(self, address_dict, block_hash):
         for key in address_dict:
             info = address_dict[key]
+            if info['balance'] == 0:
+                self.mongo_cli.delete_one(flags.FLAGS.address_info, {'address': info['address']})
+                continue
+
             info.update({'block_hash': block_hash})
             self.mongo_cli.update_one(flags.FLAGS.address_info, {'address': info['address']}, {'$set': info}, True)
 
