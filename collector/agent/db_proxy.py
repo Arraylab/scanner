@@ -19,6 +19,8 @@ class DbProxy:
         self.mongo_cli.update_one(flags.FLAGS.db_status, {}, {'$set': {flags.FLAGS.block_height: height}}, True)
 
     def save_block(self, block):
+        # if block['height'] == 538:
+        #     raise Exception
         self.mongo_cli.insert(flags.FLAGS.block_info, block)
 
         transactions = []
@@ -101,13 +103,13 @@ class DbProxy:
                             continue
 
                         asset_info['balances'][tx_input['address']] -= tx_input['amount']
-                        if asset_dict['balances'][tx_input['address']] == 0:
-                            asset_dict['balances'].pop(tx_input['address'])
-
                         tx_set = set(asset_info['txs'])
                         if transaction['id'] not in tx_set:
                             asset_info['txs'].append(transaction['id'])
                         asset_dict[tx_input['asset_id']] = asset_info
+
+                        if asset_dict[tx_input['asset_id']]['balances'][tx_input['address']] == 0:
+                            asset_dict[tx_input['asset_id']]['balances'].pop(tx_input['address'])
                     else:
                         continue
             for tx_output in transaction['outputs']:
@@ -153,7 +155,8 @@ class DbProxy:
 
                 address_info['balance'] += tx_input['amount']
                 address_info['sent'] -= tx_input['amount']
-                address_info['txs'].remove(transaction['id'])
+                if transaction['id'] in address_info['txs']:
+                    address_info['txs'].remove(transaction['id'])
                 address_dict[address] = address_info
 
             for tx_output in transaction['outputs']:

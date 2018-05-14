@@ -29,6 +29,7 @@ gflags.DEFINE_string('db_status', 'status', '')
 gflags.DEFINE_string('address_info', 'address_info', '')
 gflags.DEFINE_string('block_info', 'block_info', '')
 gflags.DEFINE_string('transaction_info', 'transaction_info', '')
+gflags.DEFINE_string('asset_info', 'asset_info', '')
 
 
 # bytom table attributes
