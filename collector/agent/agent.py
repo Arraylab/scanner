@@ -39,13 +39,16 @@ class DataAgent:
             self.height = node_block['height']
 
     def roll_back(self):
+        self.proxy.remove_future_block()
         while self.height > 0:
             db_block = self.proxy.get_block_by_height(self.height)
-            node_block = self.fetcher.request_block(self.height)
-            if db_block['hash'] == node_block['hash']:
-                return
+            if db_block is not None:
+                node_block = self.fetcher.request_block(self.height)
+                if db_block['hash'] == node_block['hash']:
+                    return
 
-            self.proxy.remove_highest_block(db_block)
+                self.proxy.remove_highest_block(db_block)
+
             self.proxy.set_height(self.height - 1)
             self.height -= 1
 

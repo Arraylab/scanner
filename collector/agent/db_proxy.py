@@ -26,13 +26,13 @@ class DbProxy:
             transaction.update({'block_height': block['height'], 'block_hash': block['hash']})
             transactions.append(transaction)
         self.mongo_cli.insert_many(flags.FLAGS.transaction_info, transactions)
-        self.index_address(transactions)
+        self.index_address(block)
 
         self.set_height(block['height'])
 
-    def index_address(self, transactions):
+    def index_address(self, block):
         address_dict = {}
-        for transaction in transactions:
+        for transaction in block['transactions']:
             for tx_input in transaction['inputs']:
                 if tx_input['type'] != 'spend' or tx_input.get('asset_id').lower() != self.btm_id:
                     continue
@@ -77,16 +77,22 @@ class DbProxy:
                     address_info['txs'].append(transaction['id'])
                 address_dict[address] = address_info
 
-        self.save_address_info(address_dict)
+        self.save_address_info(address_dict, block['hash'])
+
+    # def remove_highest_block(self, block):
+    #     current_block_height = self.get_height()
+    #     if current_block_height != block['height']:
+    #         raise Exception('the block to be removed is not the highest one')
+    #
+    #     self.mongo_cli.delete_one(flags.FLAGS.block_info, {'height': current_block_height})
+    #     self.mongo_cli.delete_many(flags.FLAGS.transaction_info, {'block_height': current_block_height})
+    #     self.rollback_address_info(block)
 
     def remove_highest_block(self, block):
-        current_block_height = self.get_height()
-        if current_block_height != block['height']:
-            raise Exception('the block to be removed is not the highest one')
-
-        self.mongo_cli.delete_one(flags.FLAGS.block_info, {'height': current_block_height})
-        self.mongo_cli.delete_many(flags.FLAGS.transaction_info, {'block_height': current_block_height})
+        current_block_hash = block['hash']
         self.rollback_address_info(block)
+        self.mongo_cli.delete_many(flags.FLAGS.transaction_info, {'block_hash': current_block_hash})
+        self.mongo_cli.delete_one(flags.FLAGS.block_info, {'hash': current_block_hash})
 
     def rollback_address_info(self, block):
         address_dict = {}
@@ -96,7 +102,8 @@ class DbProxy:
                     continue
 
                 address = tx_input.get('address')
-                if not address:
+                if not address or self.mongo_cli.get_one(
+                        flags.FLAGS.address_info, {'address': address, 'block_hash': {'$ne': block['hash']}}):
                     continue
 
                 address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
@@ -112,7 +119,8 @@ class DbProxy:
                     continue
 
                 address = tx_output.get('address')
-                if not address:
+                if not address or self.mongo_cli.get_one(
+                        flags.FLAGS.address_info, {'address': address, 'block_hash': {'$ne': block['hash']}}):
                     continue
 
                 address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
@@ -123,12 +131,19 @@ class DbProxy:
                     address_info['txs'].remove(transaction['id'])
                 address_dict[address] = address_info
 
-        self.save_address_info(address_dict)
+        self.save_address_info(address_dict, block['hash'])
 
-    def save_address_info(self, address_dict):
+    def save_address_info(self, address_dict, block_hash):
         for key in address_dict:
             info = address_dict[key]
+            info.update({'block_hash': block_hash})
             self.mongo_cli.update_one(flags.FLAGS.address_info, {'address': info['address']}, {'$set': info}, True)
 
     def get_block_by_height(self, height):
         return self.mongo_cli.get_one(flags.FLAGS.block_info, {'height': height})
+
+    def remove_future_block(self):
+        future_height = self.get_height()+1
+        future_block = self.get_block_by_height(future_height)
+        if future_block is not None:
+            self.remove_highest_block(future_block)
