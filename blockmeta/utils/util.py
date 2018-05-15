@@ -54,6 +54,72 @@ def wrap_response(data='', status='success', code='200', message='', **kwargs):
     return dict(status=status, data=data, code=code, message=message)
 
 
+def parse_next_response(uri):
+    r_content = {
+        'uri': uri,
+        'ver': 1,
+        'auth': '0',
+        'titile': 'demo',
+        'ap_set': {
+            '0': {
+                'url': 'http://127.0.0.1:5000/api/odin'
+            }
+        }
+    }
+
+    content = json.dumps(r_content)
+
+    data = {
+        "uri": uri,
+        "utc": int(time.time()),
+        "status_code": "200",
+        "status_detail": "Ok",
+        "metainfo": {
+           "content_type": "text/json",
+           "content_length": len(content),
+         },
+
+        "content": content
+      }
+
+    j_data = json.dumps(data)
+
+    response = {
+        'ver': 1,
+        'data': j_data,
+        'sign': '',
+    }
+    return response
+
+
+def hello_world_response(uri):
+    data = {
+        "uri": uri,
+        "utc": int(time.time()),
+        "status_code": "200",
+        "status_detail": "Ok",
+        "metainfo": {
+           "content_type": "text/html",
+           "content_length": 51,
+         },
+
+        "content": "<html><font color='#F00'>Hello Bytom </br> "
+                   "This is the homepage of BYTOM in PPk ODIN&PTTP</font><hr>"
+                   "<a href='ppk:286/asset/b9e477567a5bc162ae7bb81672b3eca45a5d73a517c45b32381042bdfd34d182#1.0'>"
+                   "Asset sample1</a>"
+                   ":ppk:286/asset/b9e477567a5bc162ae7bb81672b3eca45a5d73a517c45b32381042bdfd34d182#1.0</html>"
+      }
+
+    j_data = json.dumps(data)
+
+    response = {
+        'ver': 1,
+        'data': j_data,
+        'sign': '',
+    }
+    return response
+
+
 def wrap_ordin_response(status, uri, found=None):
     if status == 200:
         return wrap_ordin_200_response(found, uri)
@@ -66,7 +132,7 @@ def wrap_ordin_response(status, uri, found=None):
 
 
 def wrap_ordin_400_response(uri):
-    response = {
+    data = {
         "uri": uri,
         "utc": int(time.time()),
         "status_code": "400",
@@ -78,11 +144,18 @@ def wrap_ordin_400_response(uri):
 
         "content": "<html><font color='#F00'>Bad Request</font></html>"
       }
+
+    j_data = json.dumps(data)
+    response = {
+        'ver': 1,
+        'data': j_data,
+        'sign': '',
+    }
     return response
 
 
 def wrap_ordin_404_response(uri):
-    response = {
+    data = {
         "uri": uri,
         "utc": int(time.time()),
         "status_code": "404",
@@ -94,6 +167,13 @@ def wrap_ordin_404_response(uri):
 
         "content": "<html><font color='#F00'>Not Found</font></html>"
       }
+
+    j_data = json.dumps(data)
+    response = {
+        'ver': 1,
+        'data': j_data,
+        'sign': '',
+    }
     return response
 
 
@@ -103,13 +183,20 @@ def wrap_ordin_200_response(found, uri):
         'content_type': 'text/json',
         'content_length': len(content)
     }
-    response = {
+    data = {
         'uri': uri,
         'utc': int(time.time()),
         'status_code': '200',
         'status_detal': '0K',
         'metainfo': metainfo,
         'content': content
+    }
+    j_data = json.dumps(data)
+
+    response = {
+        'ver': 1,
+        'data': j_data,
+        'sign': '',
     }
     return response
 
