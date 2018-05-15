@@ -91,6 +91,7 @@ class DbProxy:
                     if tx_input['type'] == 'issue':
                         asset_dict[tx_input['asset_id']] = {
                             'asset_id': tx_input['asset_id'],
+                            'asset_definition': tx_input['asset_definition'],
                             'amount': tx_input['amount'],
                             'issue_by': transaction['id'],
                             'txs': [transaction['id']],
