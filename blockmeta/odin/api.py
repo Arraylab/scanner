@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import request
 import json
-from flask_restful import Resource, reqparse, abort
+from flask_restful import Resource
 from blockmeta.utils import util
 from manager import OdinManager
 from tools import flags
@@ -28,8 +28,6 @@ class OdinAPI(Resource):
         except Exception:
             return util.wrap_ordin_response(400, uri)
 
-        print arguments[1]
-        print content
         found = self.manager.handle_odin(arguments[1], content)
         try:
             assert(found)

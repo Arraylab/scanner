@@ -21,8 +21,8 @@ class BuiltinDriver:
             return self._show_asset(asset_info)
         return None
 
-
-    def _show_asset(self, asset_info):
+    @staticmethod
+    def _show_asset(asset_info):
         asset_info.pop('_id')
         return asset_info
 

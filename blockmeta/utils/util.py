@@ -68,7 +68,7 @@ def wrap_ordin_response(status, uri, found=None):
 def wrap_ordin_400_response(uri):
     response = {
         "uri": uri,
-        "utc": time.time(),
+        "utc": int(time.time()),
         "status_code": "400",
         "status_detail": "Bad Request",
         "metainfo": {
@@ -84,7 +84,7 @@ def wrap_ordin_400_response(uri):
 def wrap_ordin_404_response(uri):
     response = {
         "uri": uri,
-        "utc": time.time(),
+        "utc": int(time.time()),
         "status_code": "404",
         "status_detail": "Not Found",
         "metainfo": {
@@ -105,7 +105,7 @@ def wrap_ordin_200_response(found, uri):
     }
     response = {
         'uri': uri,
-        'utc': time.time(),
+        'utc': int(time.time()),
         'status_code': '200',
         'status_detal': '0K',
         'metainfo': metainfo,
