@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from flask import g
+import json
+import time
 import re
 
 ERROR_MSG = {
@@ -50,6 +52,66 @@ ADDRESS_62_RE = re.compile('bm1[02-9ac-hj-np-z]{59}\\Z')
 
 def wrap_response(data='', status='success', code='200', message='', **kwargs):
     return dict(status=status, data=data, code=code, message=message)
+
+
+def wrap_ordin_response(status, uri, found=None):
+    if status == 200:
+        return wrap_ordin_200_response(found, uri)
+    elif status == 404:
+        return wrap_ordin_404_response(uri)
+    elif status == 400:
+        return wrap_ordin_400_response(uri)
+    else:
+        return None
+
+
+def wrap_ordin_400_response(uri):
+    response = {
+        "uri": uri,
+        "utc": time.time(),
+        "status_code": "400",
+        "status_detail": "Bad Request",
+        "metainfo": {
+           "content_type": "text/html",
+           "content_length": 51,
+         },
+
+        "content": "<html><font color='#F00'>Bad Request</font></html>"
+      }
+    return response
+
+
+def wrap_ordin_404_response(uri):
+    response = {
+        "uri": uri,
+        "utc": time.time(),
+        "status_code": "404",
+        "status_detail": "Not Found",
+        "metainfo": {
+           "content_type": "text/html",
+           "content_length": 49,
+         },
+
+        "content": "<html><font color='#F00'>Not Found</font></html>"
+      }
+    return response
+
+
+def wrap_ordin_200_response(found, uri):
+    content = json.dumps(found)
+    metainfo = {
+        'content_type': 'text/json',
+        'content_length': len(content)
+    }
+    response = {
+        'uri': uri,
+        'utc': time.time(),
+        'status_code': '200',
+        'status_detal': '0K',
+        'metainfo': metainfo,
+        'content': content
+    }
+    return response
 
 
 def wrap_error_response(message='', data='', status='failure', code='500'):
