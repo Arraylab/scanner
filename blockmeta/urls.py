@@ -5,6 +5,7 @@ import blockmeta.address.api
 import blockmeta.block.api
 import blockmeta.search.api
 import blockmeta.tx.api
+import blockmeta.odin.api
 
 # modules = [(handle, urls, args)]
 MODULES = [
@@ -17,6 +18,8 @@ MODULES = [
     (blockmeta.block.api.BlockListAPI, ('/api/blocks',), {'endpoint': 'blocks'}),
 
     (blockmeta.search.api.SearchAPI, ('/api/search',), {'endpoint': 'search'}),
+
+    (blockmeta.odin.api.OdinAPI, ('/api/odin',), {'endpoint': 'odin', 'methods': ['POST']})
 ]
 
 

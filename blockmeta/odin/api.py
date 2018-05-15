@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-
+from flask import request
+import json
 from flask_restful import Resource, reqparse, abort
 from blockmeta.utils import util
-import time
-import json
 from manager import OdinManager
 from tools import flags
 
@@ -15,14 +14,13 @@ class OdinAPI(Resource):
 
     def __init__(self):
         self.manager = OdinManager()
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('interest', type=json.loads, help='version')
 
-    def get(self):
-        args = self.parser.parse_args()
-        data = args.get('interest')
+    def post(self):
+        r_data = request.get_data()
+        data = json.loads(r_data)
         try:
-            uri = ['uri']
+            data = data['interest']
+            uri = data['uri']
             arguments = uri.split('/')
             if len(arguments) != 3 or arguments[0] != self.ppk:
                 raise Exception
@@ -30,6 +28,8 @@ class OdinAPI(Resource):
         except Exception:
             return util.wrap_ordin_response(400, uri)
 
+        print arguments[1]
+        print content
         found = self.manager.handle_odin(arguments[1], content)
         try:
             assert(found)
