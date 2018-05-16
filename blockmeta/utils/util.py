@@ -5,6 +5,7 @@ from flask import g
 import json
 import time
 import re
+from sign import rsa_sign
 
 ERROR_MSG = {
     'zh' :{
@@ -54,6 +55,16 @@ def wrap_response(data='', status='success', code='200', message='', **kwargs):
     return dict(status=status, data=data, code=code, message=message)
 
 
+def wrap_data(data):
+    j_data = json.dumps(data)
+    response = {
+        'ver': 1,
+        'data': j_data,
+        'sign': rsa_sign(j_data),
+    }
+    return response
+
+
 def parse_next_response(uri):
     r_content = {
         'uri': uri,
@@ -66,9 +77,7 @@ def parse_next_response(uri):
             }
         }
     }
-
     content = json.dumps(r_content)
-
     data = {
         "uri": uri,
         "utc": int(time.time()),
@@ -82,13 +91,7 @@ def parse_next_response(uri):
         "content": content
       }
 
-    j_data = json.dumps(data)
-
-    response = {
-        'ver': 1,
-        'data': j_data,
-        'sign': '',
-    }
+    response = wrap_data(data)
     return response
 
 
@@ -110,13 +113,7 @@ def hello_world_response(uri):
                    ":ppk:286/asset/b9e477567a5bc162ae7bb81672b3eca45a5d73a517c45b32381042bdfd34d182#1.0</html>"
       }
 
-    j_data = json.dumps(data)
-
-    response = {
-        'ver': 1,
-        'data': j_data,
-        'sign': '',
-    }
+    response = wrap_data(data)
     return response
 
 
@@ -145,12 +142,7 @@ def wrap_ordin_400_response(uri):
         "content": "<html><font color='#F00'>Bad Request</font></html>"
       }
 
-    j_data = json.dumps(data)
-    response = {
-        'ver': 1,
-        'data': j_data,
-        'sign': '',
-    }
+    response = wrap_data(data)
     return response
 
 
@@ -168,12 +160,7 @@ def wrap_ordin_404_response(uri):
         "content": "<html><font color='#F00'>Not Found</font></html>"
       }
 
-    j_data = json.dumps(data)
-    response = {
-        'ver': 1,
-        'data': j_data,
-        'sign': '',
-    }
+    response = wrap_data(data)
     return response
 
 
@@ -191,13 +178,7 @@ def wrap_ordin_200_response(found, uri):
         'metainfo': metainfo,
         'content': content
     }
-    j_data = json.dumps(data)
-
-    response = {
-        'ver': 1,
-        'data': j_data,
-        'sign': '',
-    }
+    response = wrap_data(data)
     return response
 
 
