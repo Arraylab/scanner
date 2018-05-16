@@ -71,6 +71,11 @@ def parse_next_response(uri):
         'ver': 1,
         'auth': '0',
         'titile': 'demo',
+        'vd_set': {
+            'algo': 'MD5withRSA',
+            'pubkey': 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChNn3wKRtPmxaKq2dKsfMn6sO6AKxvtxZgNdh7\nHBWq2z0AJusZHFx2tO2X3jpaYWSIwDrH6AdU2LMMc7IRaUgvLRgT6kPK5OLEzvS+Bmh+1kh7Fz4z\nk96UX7UDt55vyK18dJxad+tYwzcN4/Vjudy9RQy6nVX+tRtqRMVNKE254wIDAQAB\n'
+        },
+
         'ap_set': {
             '0': {
                 'url': 'http://127.0.0.1:5000/api/odin'
