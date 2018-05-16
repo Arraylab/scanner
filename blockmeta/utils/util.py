@@ -5,7 +5,7 @@ from flask import g
 import json
 import time
 import re
-from sign import rsa_sign
+from sign import rsa_sign, rsa_verify
 
 ERROR_MSG = {
     'zh' :{
@@ -57,11 +57,14 @@ def wrap_response(data='', status='success', code='200', message='', **kwargs):
 
 def wrap_data(data):
     j_data = json.dumps(data)
+    print j_data
     response = {
         'ver': 1,
         'data': j_data,
         'sign': rsa_sign(j_data),
     }
+    print rsa_verify(response['sign'], j_data)
+
     return response
 
 
@@ -75,7 +78,6 @@ def parse_next_response(uri):
             'algo': 'MD5withRSA',
             'pubkey': 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChNn3wKRtPmxaKq2dKsfMn6sO6AKxvtxZgNdh7\nHBWq2z0AJusZHFx2tO2X3jpaYWSIwDrH6AdU2LMMc7IRaUgvLRgT6kPK5OLEzvS+Bmh+1kh7Fz4z\nk96UX7UDt55vyK18dJxad+tYwzcN4/Vjudy9RQy6nVX+tRtqRMVNKE254wIDAQAB\n'
         },
-
         'ap_set': {
             '0': {
                 'url': 'http://127.0.0.1:5000/api/odin'
@@ -94,7 +96,7 @@ def parse_next_response(uri):
          },
 
         "content": content
-      }
+    }
 
     response = wrap_data(data)
     return response
@@ -197,4 +199,3 @@ def wrap_error_response(message='', data='', status='failure', code='500'):
 def valid_addr(addr):
     addr.strip().lower()
     return (ADDRESS_42_RE.match(addr) or ADDRESS_62_RE.match(addr)) is not None
-
