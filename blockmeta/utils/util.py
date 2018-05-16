@@ -57,13 +57,11 @@ def wrap_response(data='', status='success', code='200', message='', **kwargs):
 
 def wrap_data(data):
     j_data = json.dumps(data)
-    print j_data
     response = {
         'ver': 1,
         'data': j_data,
-        'sign': rsa_sign(j_data),
+        'sign': 'MD5withRSA:' + rsa_sign(j_data),
     }
-    print rsa_verify(response['sign'], j_data)
 
     return response
 
@@ -192,7 +190,6 @@ def wrap_ordin_200_response(found, uri):
 def wrap_error_response(message='', data='', status='failure', code='500'):
     lang = g.lang if g.get('lang', None) else 'zh'
     response = ERROR_MSG[lang][message]
-    print response
     return dict(status=status, data=data, code=code, message=response)
 
 
