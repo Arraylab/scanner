@@ -101,6 +101,8 @@ def parse_next_response(uri):
 
 
 def hello_world_response(uri):
+    with open('./blockmeta/odin/resource/home.html', 'r') as f:
+        content = f.read()
     data = {
         "uri": uri,
         "utc": int(time.time()),
@@ -111,11 +113,7 @@ def hello_world_response(uri):
            "content_length": 51,
          },
 
-        "content": "<html><font color='#F00'>Hello Bytom </br> "
-                   "This is the homepage of BYTOM in PPk ODIN&PTTP</font><hr>"
-                   "<a href='ppk:286/asset/b9e477567a5bc162ae7bb81672b3eca45a5d73a517c45b32381042bdfd34d182#1.0'>"
-                   "Asset sample1</a>"
-                   ":ppk:286/asset/b9e477567a5bc162ae7bb81672b3eca45a5d73a517c45b32381042bdfd34d182#1.0</html>"
+        "content": content
       }
 
     response = wrap_data(data)

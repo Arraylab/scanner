@@ -7,3 +7,5 @@
 *.pyc
 *.egg-info
 logs/
+blockmeta/utils/*.pem
+blockmeta/utils/*.json
