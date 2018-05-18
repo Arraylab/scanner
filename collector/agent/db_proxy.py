@@ -43,7 +43,7 @@ class DbProxy:
                 if address is None:
                     continue
                 address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
-                                                                                         {'address': address})
+                                                                                        {'address': address})
                 if address_info is None:
                     raise Exception('transaction input address not existed in address collection: %s', address)
 
@@ -63,7 +63,7 @@ class DbProxy:
                     continue
 
                 address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
-                                                                                         {'address': address})
+                                                                                        {'address': address})
                 if address_info is None:
                     address_info = {
                         'address': address,
