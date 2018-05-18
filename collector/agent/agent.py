@@ -34,10 +34,8 @@ class DataAgent:
             try:
                 node_block = self.fetcher.request_block(self.height + 1)
                 pre_block_in_db = self.proxy.get_block_by_height(self.height)
-
                 if node_block['previous_block_hash'] != pre_block_in_db['hash']:
                     break
-
                 self.logger.info('adding block: %s | %s' % (str(node_block['height']), str(node_block['hash'])))
                 self.proxy.save_block(node_block)
                 self.height = node_block['height']
