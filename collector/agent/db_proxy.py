@@ -104,7 +104,8 @@ class DbProxy:
 
                 address_info['balance'] += tx_input['amount']
                 address_info['sent'] -= tx_input['amount']
-                address_info['txs'].remove(transaction['id'])
+                if transaction['id'] in address_info['txs']:
+                    address_info['txs'].remove(transaction['id'])
                 address_dict[address] = address_info
 
             for tx_output in transaction['outputs']:
