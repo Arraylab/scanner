@@ -66,3 +66,7 @@ HASHRATE_PER_P = 1024 * 1024 * 1024 * 1024 * 1024
 BYTOM="bytom"
 
 BYTOM_ASSET_ID = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+
+# stats
+DEFAULT_LIENTEN_PORT = "127.0.0.1:9888"
+BASE_URL = "http://" + DEFAULT_LIENTEN_PORT

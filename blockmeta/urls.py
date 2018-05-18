@@ -5,6 +5,7 @@ import blockmeta.address.api
 import blockmeta.block.api
 import blockmeta.search.api
 import blockmeta.tx.api
+import blockmeta.stat.api
 
 # modules = [(handle, urls, args)]
 MODULES = [
@@ -17,6 +18,9 @@ MODULES = [
     (blockmeta.block.api.BlockListAPI, ('/api/blocks',), {'endpoint': 'blocks'}),
 
     (blockmeta.search.api.SearchAPI, ('/api/search',), {'endpoint': 'search'}),
+
+    (blockmeta.stat.api.ChainStatsAPI, ('/api/chain-stats',), {'endpoint': 'chain-stats'}),
+    (blockmeta.stat.api.NodeStatsAPI, ('/api/node-stats',), {'endpoint': 'node-stats'}),
 ]
 
 
