@@ -43,6 +43,7 @@ class BuiltinDriver:
         end = page * 10
         if end >= len(addr['txs']):
             end = len(addr['txs'])
+        addr['txs'].reverse()
         tx_ids = addr['txs'][start:end]
         txs = []
         for tx_id in tx_ids:
