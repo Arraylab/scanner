@@ -26,7 +26,7 @@ class BuiltinDriver:
         if height <= 0:
             return None
         times = []
-        for h in range(height-1, height+1):
+        for h in range(height - 1, height + 1):
             params = json.dumps({'block_height': h})
             url = '/'.join([self.url_base, 'get-block'])
             response = requests.post(url, params).json()
@@ -48,7 +48,7 @@ class BuiltinDriver:
         if height - num <= 0 or height <= 0 or num <= 0:
             return None
         sum = 0
-        for h in range(height-num, height+1):
+        for h in range(height - num, height + 1):
             params = json.dumps({'block_height': h})
             url = '/'.join([self.url_base, 'get-hash-rate'])
             response = requests.post(url, params).json()
@@ -62,7 +62,7 @@ class BuiltinDriver:
         if height - num <= 0 or height <= 0 or num <= 0:
             return None
         sum = 0
-        for h in range(height-num, height+1):
+        for h in range(height - num, height + 1):
             params = json.dumps({'block_height': h})
             url = '/'.join([self.url_base, 'get-block'])
             response = requests.post(url, params).json()
@@ -76,14 +76,15 @@ class BuiltinDriver:
         if height - num <= 0 or height <= 0 or num <= 0:
             return None
         sum = 0
-        for h in range(height-num, height+1):
+        for h in range(height - num, height + 1):
             params = json.dumps({'block_height': h})
             url = '/'.join([self.url_base, 'get-block'])
             response = requests.post(url, params).json()
             if response['status'] == 'fail':
                 raise Exception('get block failed: %s', response['msg'])
             coinbase = response['data']['transactions'][0]
-            fee = coinbase['outputs'][0]['amount'] - self.get_recent_award(height)
+            fee = coinbase['outputs'][0]['amount'] - \
+                self.get_recent_award(height)
             sum += fee
         return sum / num
 
@@ -157,9 +158,14 @@ class BuiltinDriver:
         intervals.sort()
 
         length = len(intervals)
-        median_interval = (intervals[length/2] + intervals[length/2-1]) / 2 if length % 2 == 0 else intervals[(length+1)/2]
+        median_interval = (intervals[length / 2] + intervals[length / 2 - 1]) / \
+            2 if length % 2 == 0 else intervals[(length + 1) / 2]
         # 24小时内出块总数、平均时间、中位数、最大、最小
-        return [total_num, average_block_time, median_interval, intervals[-1], intervals[0]]
+        return [total_num,
+                average_block_time,
+                median_interval,
+                intervals[-1],
+                intervals[0]]
 
     def get_chain_status(self):
         h = self.get_recent_height()

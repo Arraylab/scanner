@@ -41,7 +41,8 @@ class NodeStats:
 
     def node_stats(self, timeout):
         time_start = time.time()
-        jobs = [gevent.spawn(self.analyze_conn, h, timeout) for h in self.hosts]
+        jobs = [gevent.spawn(self.analyze_conn, h, timeout)
+                for h in self.hosts]
         gevent.joinall(jobs, timeout=TOTAL_GEVENT_TIMEOUT)
         time_end = time.time()
         self.time_consume = time_end - time_start
