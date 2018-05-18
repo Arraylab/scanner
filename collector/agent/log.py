@@ -42,14 +42,3 @@ class Logger:
 
     def cri(self, message):
         self.logger.critical(message)
-
-
-# if __name__ == '__main__':
-#     logyyx = Logger('test')
-#     logyyx.add_stream_handler()
-#     logyyx.add_file_handler('my_log_name')
-#     logyyx.debug('a bug message')
-#     logyyx.info('an info message')
-#     logyyx.warn('a warning message')
-#     logyyx.error('a error message')
-#     logyyx.cri('a critical message')
