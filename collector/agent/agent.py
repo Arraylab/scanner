@@ -17,7 +17,7 @@ class DataAgent:
         self.proxy = DbProxy()
         self.height = self.proxy.get_height()
         self.logger = Logger('agent')
-        self.logger.add_file_handler('agent.log')
+        self.logger.add_file_handler('agent')
 
     def request_genesis_block(self):
         genesis = self.fetcher.request_block(0)
@@ -38,10 +38,12 @@ class DataAgent:
                 if node_block['previous_block_hash'] != pre_block_in_db['hash']:
                     break
 
+                self.logger.info('adding block: %s | %s' % (str(node_block['height']), str(node_block['hash'])))
                 self.proxy.save_block(node_block)
                 self.height = node_block['height']
+                self.logger.info('add block: %s | %s' % (str(node_block['height']), str(node_block['hash'])))
             except Exception as e:
-                self.logger.error('collector.agent: sync save block error: %s\nblock:\n%s' % (str(e), str(node_block)))
+                self.logger.error('collector.agent: sync save block error: %s\nblock:\n%s\n' % (str(e), str(node_block)))
                 raise Exception('collector.agent: sync save block error: %s', e)
 
     def roll_back(self):
@@ -52,11 +54,13 @@ class DataAgent:
                 if db_block['hash'] == node_block['hash']:
                     return
 
+                self.logger.info('rolling back block: %s | %s' % (str(db_block['height']), str(db_block['hash'])))
                 self.proxy.remove_highest_block(db_block)
                 self.proxy.set_height(self.height - 1)
                 self.height -= 1
+                self.logger.info('rollback block: %s | %s' % (str(db_block['height']), str(db_block['hash'])))
             except Exception as e:
-                self.logger.error('collector.agent: roll_back error: %s\nblock:\n%s' % (str(e), str(node_block)))
+                self.logger.error('collector.agent: roll_back error: %s\nblock:\n%s\n' % (str(e), str(node_block)))
                 raise Exception('collector.agent: roll_back error: %s', e)
 
     def sync_forever(self):

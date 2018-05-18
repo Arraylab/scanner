@@ -9,7 +9,7 @@ class DbProxy:
     def __init__(self):
         self.url_base = flags.FLAGS.bytomd_rpc
         self.logger = Logger('dbproxy')
-        self.logger.add_file_handler('dbproxy.log')
+        self.logger.add_file_handler('dbproxy')
         self.mongo_cli = MongodbClient(host=flags.FLAGS.mongo_bytom_host, port=flags.FLAGS.mongo_bytom_port)
         self.mongo_cli.use_db(flags.FLAGS.mongo_bytom)
 
@@ -112,7 +112,7 @@ class DbProxy:
                     address_dict[address] = address_info
 
                 except Exception as e:
-                    self.logger.error('collector.db_proxy: rollback_address_info error: %s\naddr:%s\ntx:\n%s\nti:\n%s' %
+                    self.logger.error('collector.db_proxy: rollback_address_info error: %s\naddr:%s\ntx:\n%s\nti:\n%s\n' %
                                       (str(e), str(address), str(transaction), str(tx_input)))
                     raise Exception('collector.db_proxy: rollback_address_info error: %s', e)
 
@@ -134,7 +134,7 @@ class DbProxy:
                     address_dict[address] = address_info
 
                 except Exception as e:
-                    self.logger.error('collector.db_proxy: rollback_address_info error: %s\naddr:%s\ntx:\n%s\nto:\n%s' %
+                    self.logger.error('collector.db_proxy: rollback_address_info error: %s\naddr:%s\ntx:\n%s\nto:\n%s\n' %
                                       (str(e), str(address), str(transaction), str(tx_output)))
                     raise Exception('collector.db_proxy: rollback_address_info error: %s', e)
         self.save_address_info(address_dict)
