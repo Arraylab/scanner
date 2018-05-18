@@ -1,6 +1,6 @@
 # coding=utf-8
 import time
-
+from log import Logger
 from collector.agent.db_proxy import DbProxy
 from collector.agent.fetcher import Fetcher
 from tools import flags
@@ -16,6 +16,8 @@ class DataAgent:
         self.fetcher = Fetcher()
         self.proxy = DbProxy()
         self.height = self.proxy.get_height()
+        self.logger = Logger('agent')
+        self.logger.add_file_handler('agent.log')
 
     def request_genesis_block(self):
         genesis = self.fetcher.request_block(0)
@@ -29,25 +31,33 @@ class DataAgent:
         self.roll_back()
         node_height = self.fetcher.request_chain_height()
         while self.height < node_height:
-            node_block = self.fetcher.request_block(self.height + 1)
-            pre_block_in_db = self.proxy.get_block_by_height(self.height)
+            try:
+                node_block = self.fetcher.request_block(self.height + 1)
+                pre_block_in_db = self.proxy.get_block_by_height(self.height)
 
-            if node_block['previous_block_hash'] != pre_block_in_db['hash']:
-                break
+                if node_block['previous_block_hash'] != pre_block_in_db['hash']:
+                    break
 
-            self.proxy.save_block(node_block)
-            self.height = node_block['height']
+                self.proxy.save_block(node_block)
+                self.height = node_block['height']
+            except Exception as e:
+                self.logger.error('collector.agent: sync save block error: %s\nblock:\n%s' % (str(e), str(node_block)))
+                raise Exception('collector.agent: sync save block error: %s', e)
 
     def roll_back(self):
         while self.height > 0:
-            db_block = self.proxy.get_block_by_height(self.height)
-            node_block = self.fetcher.request_block(self.height)
-            if db_block['hash'] == node_block['hash']:
-                return
+            try:
+                db_block = self.proxy.get_block_by_height(self.height)
+                node_block = self.fetcher.request_block(self.height)
+                if db_block['hash'] == node_block['hash']:
+                    return
 
-            self.proxy.remove_highest_block(db_block)
-            self.proxy.set_height(self.height - 1)
-            self.height -= 1
+                self.proxy.remove_highest_block(db_block)
+                self.proxy.set_height(self.height - 1)
+                self.height -= 1
+            except Exception as e:
+                self.logger.error('collector.agent: roll_back error: %s\nblock:\n%s' % (str(e), str(node_block)))
+                raise Exception('collector.agent: roll_back error: %s', e)
 
     def sync_forever(self):
         while True:

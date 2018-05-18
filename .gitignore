@@ -7,3 +7,4 @@
 *.pyc
 *.egg-info
 logs/
+collector/logs

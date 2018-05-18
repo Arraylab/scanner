@@ -1,3 +1,4 @@
+from log import Logger
 from collector.db.mongodriver import MongodbClient
 from tools import flags
 
@@ -7,7 +8,8 @@ class DbProxy:
 
     def __init__(self):
         self.url_base = flags.FLAGS.bytomd_rpc
-
+        self.logger = Logger('dbproxy')
+        self.logger.add_file_handler('dbproxy.log')
         self.mongo_cli = MongodbClient(host=flags.FLAGS.mongo_bytom_host, port=flags.FLAGS.mongo_bytom_port)
         self.mongo_cli.use_db(flags.FLAGS.mongo_bytom)
 
@@ -92,38 +94,49 @@ class DbProxy:
         address_dict = {}
         for transaction in block['transactions']:
             for tx_input in transaction['inputs']:
-                if tx_input['type'] != 'spend' or tx_input.get('asset_id').lower() != self.btm_id:
-                    continue
+                try:
+                    if tx_input['type'] != 'spend' or tx_input.get('asset_id').lower() != self.btm_id:
+                        continue
 
-                address = tx_input.get('address')
-                if not address:
-                    continue
+                    address = tx_input.get('address')
+                    if not address:
+                        continue
 
-                address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
-                                                                                         {'address': address})
+                    address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
+                                                                                             {'address': address})
 
-                address_info['balance'] += tx_input['amount']
-                address_info['sent'] -= tx_input['amount']
-                if transaction['id'] in address_info['txs']:
-                    address_info['txs'].remove(transaction['id'])
-                address_dict[address] = address_info
+                    address_info['balance'] += tx_input['amount']
+                    address_info['sent'] -= tx_input['amount']
+                    if transaction['id'] in address_info['txs']:
+                        address_info['txs'].remove(transaction['id'])
+                    address_dict[address] = address_info
+
+                except Exception as e:
+                    self.logger.error('collector.db_proxy: rollback_address_info error: %s\naddr:%s\ntx:\n%s\nti:\n%s' %
+                                      (str(e), str(address), str(transaction), str(tx_input)))
+                    raise Exception('collector.db_proxy: rollback_address_info error: %s', e)
 
             for tx_output in transaction['outputs']:
-                if tx_output['type'] != 'control' or tx_output.get('asset_id').lower() != self.btm_id:
-                    continue
+                try:
+                    if tx_output['type'] != 'control' or tx_output.get('asset_id').lower() != self.btm_id:
+                        continue
 
-                address = tx_output.get('address')
-                if not address:
-                    continue
+                    address = tx_output.get('address')
+                    if not address:
+                        continue
 
-                address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
-                                                                                         {'address': address})
-                address_info['balance'] -= tx_output['amount']
-                address_info['recv'] -= tx_output['amount']
-                if transaction['id'] in address_info['txs']:
-                    address_info['txs'].remove(transaction['id'])
-                address_dict[address] = address_info
+                    address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
+                                                                                             {'address': address})
+                    address_info['balance'] -= tx_output['amount']
+                    address_info['recv'] -= tx_output['amount']
+                    if transaction['id'] in address_info['txs']:
+                        address_info['txs'].remove(transaction['id'])
+                    address_dict[address] = address_info
 
+                except Exception as e:
+                    self.logger.error('collector.db_proxy: rollback_address_info error: %s\naddr:%s\ntx:\n%s\nto:\n%s' %
+                                      (str(e), str(address), str(transaction), str(tx_output)))
+                    raise Exception('collector.db_proxy: rollback_address_info error: %s', e)
         self.save_address_info(address_dict)
 
     def save_address_info(self, address_dict):
