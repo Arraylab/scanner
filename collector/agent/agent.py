@@ -1,6 +1,6 @@
 # coding=utf-8
 import time
-
+from collector.log import Logger
 from collector.agent.db_proxy import DbProxy
 from collector.agent.fetcher import Fetcher
 from tools import flags
@@ -16,6 +16,8 @@ class DataAgent:
         self.fetcher = Fetcher()
         self.proxy = DbProxy()
         self.height = self.proxy.get_height()
+        self.logger = Logger('agent')
+        self.logger.add_file_handler('agent.log')
 
     def request_genesis_block(self):
         genesis = self.fetcher.request_block(0)

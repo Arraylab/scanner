@@ -67,6 +67,7 @@ def wrap_data(data):
 
 
 def parse_next_response(uri):
+    print 'parse_next_response'
     r_content = {
         'uri': uri,
         'ver': 1,
@@ -74,7 +75,8 @@ def parse_next_response(uri):
         'titile': 'demo',
         'vd_set': {
             'algo': 'MD5withRSA',
-            'pubkey': 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChNn3wKRtPmxaKq2dKsfMn6sO6AKxvtxZgNdh7\nHBWq2z0AJusZHFx2tO2X3jpaYWSIwDrH6AdU2LMMc7IRaUgvLRgT6kPK5OLEzvS+Bmh+1kh7Fz4z\nk96UX7UDt55vyK18dJxad+tYwzcN4/Vjudy9RQy6nVX+tRtqRMVNKE254wIDAQAB\n'
+            'pubkey': 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChNn3wKRtPmxaKq2dKsfMn6sO6AKxvtxZgNdh7\r\nHBWq2z0AJusZHFx2tO2X3jpaYWSIwDrH6AdU2LMMc7IRaUgvLRgT6kPK5OLEzvS+Bmh+1kh7Fz4z\r\nk96UX7UDt55vyK18dJxad+tYwzcN4/Vjudy9RQy6nVX+tRtqRMVNKE254wIDAQAB\r\n',
+
         },
         'ap_set': {
             '0': {

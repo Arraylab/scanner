@@ -24,10 +24,11 @@ class OdinAPI(Resource):
         data = data['interest']
 
         uri = data['uri']
+        print uri
         arguments = uri.split('#')[0]
         arguments.strip()
         argument_list = [ arg for arg in arguments.split('/') if arg != ""]
-
+        print len(argument_list)
         if len(argument_list) < 1 or argument_list[0] != self.ppk:
             return util.wrap_ordin_response(400, uri)
         if len(argument_list) == 1:
