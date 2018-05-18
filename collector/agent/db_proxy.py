@@ -103,8 +103,7 @@ class DbProxy:
                         continue
 
                     address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
-                                                                                             {'address': address})
-
+                                                                                            {'address': address})
                     address_info['balance'] += tx_input['amount']
                     address_info['sent'] -= tx_input['amount']
                     if transaction['id'] in address_info['txs']:
