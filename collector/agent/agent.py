@@ -34,7 +34,6 @@ class DataAgent:
             try:
                 node_block = self.fetcher.request_block(self.height + 1)
                 pre_block_in_db = self.proxy.get_block_by_height(self.height)
-
                 if node_block['previous_block_hash'] != pre_block_in_db['hash']:
                     break
 
