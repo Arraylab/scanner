@@ -84,9 +84,9 @@ class DbProxy:
         if current_block_height != block['height']:
             raise Exception('the block to be removed is not the highest one')
 
-        self.mongo_cli.delete_one(flags.FLAGS.block_info, {'height': current_block_height})
-        self.mongo_cli.delete_many(flags.FLAGS.transaction_info, {'block_height': current_block_height})
         self.rollback_address_info(block)
+        self.mongo_cli.delete_many(flags.FLAGS.transaction_info, {'block_height': current_block_height})
+        self.mongo_cli.delete_one(flags.FLAGS.block_info, {'height': current_block_height})
 
     def rollback_address_info(self, block):
         address_dict = {}
