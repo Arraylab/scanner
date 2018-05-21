@@ -139,6 +139,7 @@ class DbProxy:
                         'amount': tx_input['amount'],
                         'issue_by': transaction['id'],
                     })
+
                 elif tx_input['type'] == 'spend':
                     address = tx_input.get('address', None)
                     if address is None:
@@ -204,7 +205,7 @@ class DbProxy:
                 elif tx_input['type'] == 'spend':
                     address = tx_input.get('address', None)
                     if address is None:
-                        continue
+                        break
                     if address not in asset_info['balances']:
                         asset_info['balances'][address] = 0
                     asset_info['balances'][address] += tx_input['amount']
@@ -228,7 +229,7 @@ class DbProxy:
                 if tx_output['type'] == 'control':
                     address = tx_output.get('address', None)
                     if address is None:
-                        return
+                        break
                     asset_info['balances'][address] -= tx_output['amount']
                 elif tx_output['type'] == 'retire':
                     asset_info['retire'] -= tx_output['amount']
