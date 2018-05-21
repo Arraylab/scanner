@@ -350,11 +350,12 @@ class DbProxy:
             info = address_dict[address]
             balances = info['asset_balances']
             if len(info['txs']) == 0:
-                info.update(self.default_address_info(address))
-            elif len(balances) > 0:
-                for asset_id in balances:
-                    if cmp(balances[asset_id], {'balance': 0, 'sent': 0, 'recv': 0}) == 0:
-                        balances.pop(asset_id)
+                self.mongo_cli.delete_one(flags.FLAGS.address_info, {'address': info['address']})
+                continue
+
+            for asset_id in balances:
+                if cmp(balances[asset_id], {'balance': 0, 'sent': 0, 'recv': 0}) == 0:
+                    balances.pop(asset_id)
 
             self.mongo_cli.update_one(flags.FLAGS.address_info, {'address': info['address']}, {'$set': info}, True)
 
@@ -363,11 +364,12 @@ class DbProxy:
             info = asset_dict[asset_id]
             balances = asset_dict[asset_id]['balances']
             if len(info['txs']) == 0:
-                info.update(self.default_asset_info(asset_id))
-            else:
-                for address in balances:
-                    if balances[address] == 0:
-                        balances.pop(address)
+                self.mongo_cli.delete_one(flags.FLAGS.asset_info, {'asset_id': info['asset_id']})
+                continue
+
+            for address in balances:
+                if balances[address] == 0:
+                    balances.pop(address)
 
             self.mongo_cli.update_one(flags.FLAGS.asset_info, {'asset_id': info['asset_id']}, {'$set': info}, True)
 
