@@ -24,60 +24,79 @@ class DbProxy:
         # if block['height'] == 538:
         #     raise Exception
         self.mongo_cli.insert(flags.FLAGS.block_info, block)
-
-        transactions = []
-        for transaction in block['transactions']:
-            transaction.update({'block_height': block['height'], 'block_hash': block['hash']})
-            transactions.append(transaction)
-        self.mongo_cli.insert_many(flags.FLAGS.transaction_info, transactions)
+        self.insert_transactions(block)
         self.index_address(block)
         self.update_asset_status(block)
         self.set_height(block['height'])
+
+    def insert_transactions(self, block):
+        for transaction in block['transactions']:
+            transaction.update({'block_height': block['height'], 'block_hash': block['hash']})
+        self.mongo_cli.insert_many(flags.FLAGS.transaction_info, block['transactions'])
+
+    @staticmethod
+    def default_address_info(address):
+        address_info = {
+            'address': address,
+            'balance': 0,
+            'recv': 0,
+            'sent': 0,
+            'txs': [],
+            'asset_balances': {}
+        }
+        return address_info
 
     def index_address(self, block):
         address_dict = {}
         for transaction in block['transactions']:
             for tx_input in transaction['inputs']:
-                if tx_input['type'] != 'spend' or tx_input.get('asset_id').lower() != self.btm_id:
-                    continue
-
                 address = tx_input.get('address', None)
-                if address is None:
+                if tx_input['type'] != 'spend' \
+                        or (transaction['status_fail'] and tx_input.get('asset_id').lower() != self.btm_id)\
+                        or address is None:
                     continue
-                address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
-                                                                                         {'address': address})
-                if address_info is None:
-                    raise Exception('transaction input address not existed in address collection: %s', address)
 
-                address_info['balance'] -= tx_input['amount']
-                address_info['sent'] += tx_input['amount']
-                txs_set = set(address_info['txs'])
-                if transaction['id'] not in txs_set:
+                address_info = address_dict.get(address, None) \
+                               or self.mongo_cli.get_one(flags.FLAGS.address_info, {'address': address}) \
+                               or self.default_address_info(address)
+
+                asset_id = tx_input.get('asset_id').lower()
+                if asset_id == self.btm_id:
+                    address_info['balance'] -= tx_input['amount']
+                    address_info['sent'] += tx_input['amount']
+                else:
+                    asset_balance = address_info.get('asset_balances').\
+                        setdefault(asset_id, {'balance': 0, 'sent': 0, 'recv': 0})
+                    asset_balance['balance'] -= tx_input['amount']
+                    asset_balance['sent'] += tx_input['amount']
+
+                if transaction['id'] not in address_info['txs']:
                     address_info['txs'].append(transaction['id'])
+
                 address_dict[address] = address_info
 
             for tx_output in transaction['outputs']:
-                if tx_output.get('type') != 'control' or tx_output.get('asset_id').lower() != self.btm_id:
+                address = tx_output.get('address', None)
+                if tx_output.get('type') != 'control' \
+                        or (transaction['status_fail'] and tx_output.get('asset_id').lower() != self.btm_id)\
+                        or address is None:
                     continue
 
-                address = tx_output.get('address')
-                if not address:
-                    continue
+                address_info = address_dict.get(address, None) \
+                               or self.mongo_cli.get_one(flags.FLAGS.address_info, {'address': address}) \
+                               or self.default_address_info(address)
 
-                address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
-                                                                                         {'address': address})
-                if address_info is None:
-                    address_info = {
-                        'address': address,
-                        'balance': 0,
-                        'recv': 0,
-                        'sent': 0,
-                        'txs': [],
-                    }
-                address_info['balance'] += tx_output['amount']
-                address_info['recv'] += tx_output['amount']
-                txs_set = set(address_info['txs'])
-                if transaction['id'] not in txs_set:
+                asset_id = tx_output.get('asset_id').lower()
+                if asset_id == self.btm_id:
+                    address_info['balance'] += tx_output['amount']
+                    address_info['recv'] += tx_output['amount']
+                else:
+                    asset_balance = address_info.get('asset_balances').\
+                        setdefault(asset_id, {'balance': 0, 'sent': 0, 'recv': 0})
+                    asset_balance['balance'] += tx_output['amount']
+                    asset_balance['recv'] += tx_output['amount']
+
+                if transaction['id'] not in address_info['txs']:
                     address_info['txs'].append(transaction['id'])
 
                 address_dict[address] = address_info
@@ -86,6 +105,19 @@ class DbProxy:
             address_dict[address].update({'block_hash': block['hash'], 'block_height': block['height']})
         self.save_address_info(address_dict)
 
+    @staticmethod
+    def default_asset_info(asset_id):
+        asset_info = {
+            'txs': [],
+            'balances': {},
+            'asset_id': asset_id,
+            'retire': 0,
+            'asset_definition': {},
+            'amount': 0,
+            'issue_by': '',
+        }
+        return asset_info
+
     def update_asset_status(self, block):
         asset_dict = {}
         for transaction in block['transactions']:
@@ -93,56 +125,57 @@ class DbProxy:
                 continue
 
             for tx_input in transaction['inputs']:
-                if tx_input.get('asset_id').lower() != self.btm_id:
-                    if tx_input['type'] == 'issue':
-                        asset_dict[tx_input['asset_id']] = {
-                            'asset_id': tx_input['asset_id'],
-                            'asset_definition': tx_input['asset_definition'],
-                            'amount': tx_input['amount'],
-                            'retire': 0,
-                            'issue_by': transaction['id'],
-                            'txs': [transaction['id']],
-                            'balances': {}
-                        }
-                    elif tx_input['type'] == 'spend':
-                        asset_info = asset_dict.get(tx_input['asset_id'], None) or self.mongo_cli.get_one(
-                            flags.FLAGS.asset_info, {'asset_id': tx_input['asset_id']})
-                        if 'address' not in tx_input:
-                            continue
+                asset_id = tx_input.get('asset_id').lower()
+                if asset_id == self.btm_id:
+                    continue
 
-                        asset_info['balances'][tx_input['address']] -= tx_input['amount']
-                        tx_set = set(asset_info['txs'])
-                        if transaction['id'] not in tx_set:
-                            asset_info['txs'].append(transaction['id'])
-                        asset_dict[tx_input['asset_id']] = asset_info
+                asset_info = asset_dict.get(tx_input['asset_id'], None) \
+                             or self.mongo_cli.get_one(flags.FLAGS.asset_info, {'asset_id': tx_input['asset_id']}) \
+                             or self.default_asset_info(asset_id)
 
-                    else:
-                        continue
+                if tx_input['type'] == 'issue':
+                    asset_info.update({
+                        'asset_definition': tx_input['asset_definition'],
+                        'amount': tx_input['amount'],
+                        'issue_by': transaction['id'],
+                    })
+                elif tx_input['type'] == 'spend':
+                    address = tx_input.get('address', None)
+                    if address is None:
+                        break
+                    if address not in asset_info['balances']:
+                        asset_info['balances'][address] = 0
+                    asset_info['balances'][address] -= tx_input['amount']
+                else:
+                    continue
+
+                if transaction['id'] not in asset_info['txs']:
+                    asset_info['txs'].append(transaction['id'])
+                asset_dict[asset_id] = asset_info
+
             for tx_output in transaction['outputs']:
-                if tx_output.get('asset_id').lower() != self.btm_id:
-                    if tx_output['type'] == 'control':
-                        asset_info = asset_dict.get(tx_output['asset_id'], None) or self.mongo_cli.get_one(
-                            flags.FLAGS.asset_info, {'asset_id': tx_output['asset_id']})
-                        if 'address' not in tx_output:
-                            continue
+                asset_id = tx_output.get('asset_id').lower()
+                if asset_id == self.btm_id:
+                    continue
+                asset_info = asset_dict.get(tx_output['asset_id'], None) \
+                             or self.mongo_cli.get_one(flags.FLAGS.asset_info, {'asset_id': tx_output['asset_id']}) \
+                             or self.default_asset_info(asset_id)
 
-                        if tx_output['address'] not in asset_info['balances']:
-                            asset_info['balances'][tx_output['address']] = 0
-                        asset_info['balances'][tx_output['address']] += tx_output['amount']
-                        tx_set = set(asset_info['txs'])
-                        if transaction['id'] not in tx_set:
-                            asset_info['txs'].append(transaction['id'])
-                        asset_dict[tx_output['asset_id']] = asset_info
-                    elif tx_output['type'] == 'retire':
-                        asset_info = asset_dict.get(tx_output['asset_id'], None) or self.mongo_cli.get_one(
-                            flags.FLAGS.asset_info, {'asset_id': tx_output['asset_id']})
-                        asset_info['retire'] += tx_output['amount']
-                        tx_set = set(asset_info['txs'])
-                        if transaction['id'] not in tx_set:
-                            asset_info['txs'].append(transaction['id'])
-                        asset_dict[tx_output['asset_id']] = asset_info
-                    else:
-                        continue
+                if tx_output['type'] == 'control':
+                    address = tx_output.get('address', None)
+                    if address is None:
+                        break
+                    if address not in asset_info['balances']:
+                        asset_info['balances'][address] = 0
+                    asset_info['balances'][address] += tx_output['amount']
+                elif tx_output['type'] == 'retire':
+                    asset_info['retire'] += tx_output['amount']
+                else:
+                    continue
+
+                if transaction['id'] not in asset_info['txs']:
+                    asset_info['txs'].append(transaction['id'])
+                asset_dict[asset_id] = asset_info
 
         for asset in asset_dict:
             asset_dict[asset].update({'block_hash': block['hash'], 'block_height': block['height']})
@@ -157,58 +190,55 @@ class DbProxy:
                 continue
 
             for tx_input in transaction['input']:
-                if tx_input.get('asset_id').lower() == self.btm_id or \
-                        self.mongo_cli.get_one(flags.FLAGS.asset_info,
-                                               {'asset_id': tx_input['asset_id'], 'block_hash': block['hash']}) is None:
+                asset_id = tx_input.get('asset_id').lower()
+                if asset_info == self.btm_id:
                     continue
+
+                asset_info = asset_dict.get(tx_input['asset_id'], None) \
+                             or self.mongo_cli.get_one(flags.FLAGS.address_info, {'asset_id': asset_id, 'block_hash': block['hash']})
+                if asset_info is None:
+                    continue
+
                 if tx_input['type'] == 'issue':
-                    asset_info = asset_dict.get(tx_input['asset_id'], None) or self.mongo_cli.get_one(
-                        flags.FLAGS.address_info, {'asset_id': tx_input['asset_id']})
                     asset_info['txs'] = {}
                 elif tx_input['type'] == 'spend':
-                    asset_info = asset_dict.get(tx_input['asset_id'], None) or self.mongo_cli.get_one(
-                        flags.FLAGS.asset_info, {'asset_id': tx_input['asset_id']})
-                    if 'address' not in tx_input:
+                    address = tx_input.get('address', None)
+                    if address is None:
                         continue
-
-                    if tx_input['address'] not in asset_info['balances']:
-                        asset_info['balances'][tx_input['address']] = 0
-                    asset_info['balances'][tx_input['address']] += tx_input['amount']
-                    tx_set = set(asset_info['txs'])
-                    if transaction['id'] in tx_set:
-                        asset_info['txs'].remove(transaction['id'])
-                    asset_dict[tx_input['asset_id']] = asset_info
-
+                    if address not in asset_info['balances']:
+                        asset_info['balances'][address] = 0
+                    asset_info['balances'][address] += tx_input['amount']
                 else:
                     continue
+
+                if transaction['id'] in asset_info['txs']:
+                    asset_info['txs'].remove(transaction['id'])
+                asset_dict[tx_input['asset_id']] = asset_info
                 self.logger.debug("address_dict after dealing TI %s:\n%s" % (str(tx_input), str(asset_dict)))
+
             for tx_output in transaction['outputs']:
-                if tx_output.get('asset_id').lower() == self.btm_id or \
-                        self.mongo_cli.get_one(flags.FLAGS.asset_info,
-                                               {'asset_id': tx_output['asset_id'], 'block_hash': block['hash']}) is None:
+                asset_id = tx_output.get('asset_id').lower()
+                if asset_id == self.btm_id:
                     continue
+                asset_info = asset_dict.get(tx_output['asset_id'], None) \
+                             or self.mongo_cli.get_one(flags.FLAGS.asset_info, {'asset_id': asset_id, 'block_hash': block['hash']})
+                if asset_info is None:
+                    continue
+
                 if tx_output['type'] == 'control':
-                    asset_info = asset_dict.get(tx_output['asset_id'], None) or self.mongo_cli.get_one(
-                        flags.FLAGS.asset_info, {'asset_id': tx_output['asset_id']})
-                    if 'address' not in tx_output:
-                        continue
-
-                    asset_info['balances'][tx_output['address']] -= tx_output['amount']
-                    tx_set = set(asset_info['txs'])
-                    if transaction['id'] in tx_set:
-                        asset_info['txs'].remove(transaction['id'])
-                    asset_dict[tx_output['asset_id']] = asset_info
-
+                    address = tx_output.get('address', None)
+                    if address is None:
+                        return
+                    asset_info['balances'][address] -= tx_output['amount']
                 elif tx_output['type'] == 'retire':
-                    asset_info = asset_dict.get(tx_output['asset_id'], None) or self.mongo_cli.get_one(
-                        flags.FLAGS.asset_info, {'asset_id': tx_output['asset_id']})
                     asset_info['retire'] -= tx_output['amount']
-                    tx_set = set(asset_info['txs'])
-                    if transaction['id'] in tx_set:
-                        asset_info['txs'].remove(transaction['id'])
-                    asset_dict[tx_output['asset_id']] = asset_info
                 else:
                     continue
+
+                if transaction['id'] in asset_info['txs']:
+                    asset_info['txs'].remove(transaction['id'])
+                asset_dict[tx_output['asset_id']] = asset_info
+
                 self.logger.debug("address_dict after dealing TO %s:\n%s" % (str(tx_output), str(asset_dict)))
 
         self.set_asset_mark(asset_dict)
@@ -216,8 +246,8 @@ class DbProxy:
         self.save_asset_info(asset_dict)
 
     def set_asset_mark(self, asset_dict):
-        for key in asset_dict:
-            info = asset_dict[key]
+        for asset in asset_dict:
+            info = asset_dict[asset]
             if len(info['txs']) == 0:
                 continue
             latest_tx = self.get_one(flags.FLAGS.transaction_info, {'id': info['txs'][-1]})
@@ -237,7 +267,7 @@ class DbProxy:
 
         except Exception as e:
             self.logger.error("remove highest block Error: %s\n%s" % (str(e), str(block)))
-            raise  Exception
+            raise Exception
 
     def rollback_address_info(self, block):
         address_dict = {}
@@ -245,37 +275,53 @@ class DbProxy:
             for transaction in block['transactions']:
                 self.logger.debug("begin to deal with tx: %s\naddress_dict:\n%s" % (str(transaction['id']), str(address_dict)))
                 for tx_input in transaction['inputs']:
-                    if tx_input['type'] != 'spend' or tx_input.get('asset_id').lower() != self.btm_id:
+                    address = tx_input.get('address', None)
+                    if tx_input['type'] != 'spend' \
+                            or (transaction['status_fail'] and tx_input.get('asset_id').lower() != self.btm_id) \
+                            or address is None:
                         continue
 
-                    address = tx_input.get('address')
-                    if not address or self.mongo_cli.get_one(
-                            flags.FLAGS.address_info, {'address': address, 'block_hash': block['hash']}) is None:
+                    address_info = address_dict.get(address, None) \
+                                   or self.mongo_cli.get_one(flags.FLAGS.address_info, {'address': address, 'block_hash': block['hash']})
+                    if address_info is None:
                         continue
 
-                    address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
-                                                                                             {'address': address})
+                    asset_id = tx_input.get('asset_id').lower()
+                    if asset_id == self.btm_id:
+                        address_info['balance'] += tx_input['amount']
+                        address_info['sent'] -= tx_input['amount']
+                    else:
+                        balances = address_info.setdefault('asset_balances', {})
+                        asset_balance = balances.setdefault(asset_id, {'balance': 0, 'sent': 0, 'recv': 0})
+                        asset_balance['balance'] += tx_input['amount']
+                        asset_balance['sent'] -= tx_input['amount']
 
-                    address_info['balance'] += tx_input['amount']
-                    address_info['sent'] -= tx_input['amount']
                     if transaction['id'] in address_info['txs']:
                         address_info['txs'].remove(transaction['id'])
                     address_dict[address] = address_info
                     self.logger.debug("address_dict after dealing TI %s:\n%s" % (str(tx_input), str(address_dict)))
 
                 for tx_output in transaction['outputs']:
-                    if tx_output['type'] != 'control' or tx_output.get('asset_id').lower() != self.btm_id:
+                    address = tx_output.get('address', None)
+                    if tx_output['type'] != 'control' \
+                            or (transaction['status_fail'] and tx_output.get('asset_id').lower() != self.btm_id) \
+                            or address is None:
                         continue
 
-                    address = tx_output.get('address')
-                    if not address or self.mongo_cli.get_one(
-                            flags.FLAGS.address_info, {'address': address, 'block_hash': block['hash']}) is None:
+                    address_info = address_dict.get(address, None) \
+                                   or self.mongo_cli.get_one(flags.FLAGS.address_info, {'address': address, 'block_hash': block['hash']})
+                    if address_info is None:
                         continue
 
-                    address_info = address_dict.get(address, None) or self.mongo_cli.get_one(flags.FLAGS.address_info,
-                                                                                             {'address': address})
-                    address_info['balance'] -= tx_output['amount']
-                    address_info['recv'] -= tx_output['amount']
+                    asset_id = tx_output.get('asset_id').lower()
+                    if asset_id == self.btm_id:
+                        address_info['balance'] -= tx_output['amount']
+                        address_info['recv'] -= tx_output['amount']
+                    else:
+                        asset_balance = balances.setdefault(asset_id, {'balance': 0, 'sent': 0, 'recv': 0})
+                        asset_balance['balance'] -= tx_output['amount']
+                        asset_balance['recv'] -= tx_output['amount']
+
                     if transaction['id'] in address_info['txs']:
                         address_info['txs'].remove(transaction['id'])
                     address_dict[address] = address_info
@@ -290,33 +336,36 @@ class DbProxy:
         self.save_address_info(address_dict)
 
     def set_address_mark(self, address_dict):
-        for key in address_dict:
-            info = address_dict[key]
+        for address in address_dict:
+            info = address_dict[address]
             if len(info['txs']) == 0:
                 continue
             latest_tx = self.get_one(flags.FLAGS.transaction_info, {'id': info['txs'][-1]})
             info.update({'block_hash': latest_tx['block_hash'], 'block_height': latest_tx['block_height']})
 
     def save_address_info(self, address_dict):
-        for key in address_dict:
-            info = address_dict[key]
+        for address in address_dict:
+            info = address_dict[address]
+            balances = info['asset_balances']
             if len(info['txs']) == 0:
-                self.mongo_cli.delete_one(flags.FLAGS.address_info, {'address': info['address']})
-                continue
+                info.update(self.default_address_info(address))
+            elif len(balances) > 0:
+                for asset_id in balances:
+                    if cmp(balances[asset_id], {'balance': 0, 'sent': 0, 'recv': 0}) == 0:
+                        balances.pop(asset_id)
 
             self.mongo_cli.update_one(flags.FLAGS.address_info, {'address': info['address']}, {'$set': info}, True)
 
     def save_asset_info(self, asset_dict):
-        for key in asset_dict:
-            info = asset_dict[key]
+        for asset_id in asset_dict:
+            info = asset_dict[asset_id]
+            balances = asset_dict[asset_id]['balances']
             if len(info['txs']) == 0:
-                self.mongo_cli.delete_one(flags.FLAGS.asset_info, {'asset_id': info['asset_id']})
-                continue
-
-            balances = asset_dict[key]['balances']
-            for address in balances:
-                if balances[address] == 0:
-                    balances.pop(address)
+                info.update(self.default_asset_info(asset_id))
+            else:
+                for address in balances:
+                    if balances[address] == 0:
+                        balances.pop(address)
 
             self.mongo_cli.update_one(flags.FLAGS.asset_info, {'asset_id': info['asset_id']}, {'$set': info}, True)
 
