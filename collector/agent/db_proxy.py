@@ -21,8 +21,6 @@ class DbProxy:
         self.mongo_cli.update_one(flags.FLAGS.db_status, {}, {'$set': {flags.FLAGS.block_height: height}}, True)
 
     def save_block(self, block):
-        # if block['height'] == 538:
-        #     raise Exception
         self.mongo_cli.insert(flags.FLAGS.block_info, block)
         self.insert_transactions(block)
         self.index_address(block)
@@ -126,21 +124,22 @@ class DbProxy:
 
             for tx_input in transaction['inputs']:
                 asset_id = tx_input.get('asset_id').lower()
-                if asset_id == self.btm_id:
+                tx_input_type = tx_input.get('type').lower()
+                if asset_id == self.btm_id or tx_input_type == 'coinbase':
                     continue
 
                 asset_info = asset_dict.get(tx_input['asset_id'], None) \
                              or self.mongo_cli.get_one(flags.FLAGS.asset_info, {'asset_id': tx_input['asset_id']}) \
                              or self.default_asset_info(asset_id)
 
-                if tx_input['type'] == 'issue':
+                if tx_input_type == 'issue':
                     asset_info.update({
                         'asset_definition': tx_input['asset_definition'],
                         'amount': tx_input['amount'],
                         'issue_by': transaction['id'],
                     })
 
-                elif tx_input['type'] == 'spend':
+                elif tx_input_type == 'spend':
                     address = tx_input.get('address', None)
                     if address is None:
                         break
@@ -190,9 +189,10 @@ class DbProxy:
             if transaction['status_fail']:
                 continue
 
-            for tx_input in transaction['input']:
+            for tx_input in transaction['inputs']:
                 asset_id = tx_input.get('asset_id').lower()
-                if asset_info == self.btm_id:
+                tx_input_type = tx_input.get('type').lower()
+                if asset_id == self.btm_id or tx_input_type == 'coinbase':
                     continue
 
                 asset_info = asset_dict.get(tx_input['asset_id'], None) \
@@ -200,9 +200,9 @@ class DbProxy:
                 if asset_info is None:
                     continue
 
-                if tx_input['type'] == 'issue':
+                if tx_input_type == 'issue':
                     asset_info['txs'] = {}
-                elif tx_input['type'] == 'spend':
+                elif tx_input_type == 'spend':
                     address = tx_input.get('address', None)
                     if address is None:
                         break
@@ -251,7 +251,7 @@ class DbProxy:
             info = asset_dict[asset]
             if len(info['txs']) == 0:
                 continue
-            latest_tx = self.get_one(flags.FLAGS.transaction_info, {'id': info['txs'][-1]})
+            latest_tx = self.mongo_cli.get_one(flags.FLAGS.transaction_info, {'id': info['txs'][-1]})
             info.update({'block_hash': latest_tx['block_hash'], 'block_height': latest_tx['block_height']})
 
     def remove_highest_block(self, block):
@@ -292,8 +292,8 @@ class DbProxy:
                         address_info['balance'] += tx_input['amount']
                         address_info['sent'] -= tx_input['amount']
                     else:
-                        balances = address_info.setdefault('asset_balances', {})
-                        asset_balance = balances.setdefault(asset_id, {'balance': 0, 'sent': 0, 'recv': 0})
+                        asset_balance = address_info.get('asset_balances').\
+                            setdefault(asset_id, {'balance': 0, 'sent': 0, 'recv': 0})
                         asset_balance['balance'] += tx_input['amount']
                         asset_balance['sent'] -= tx_input['amount']
 
@@ -319,7 +319,8 @@ class DbProxy:
                         address_info['balance'] -= tx_output['amount']
                         address_info['recv'] -= tx_output['amount']
                     else:
-                        asset_balance = balances.setdefault(asset_id, {'balance': 0, 'sent': 0, 'recv': 0})
+                        asset_balance = address_info.get('asset_balances').\
+                            setdefault(asset_id, {'balance': 0, 'sent': 0, 'recv': 0})
                         asset_balance['balance'] -= tx_output['amount']
                         asset_balance['recv'] -= tx_output['amount']
 
@@ -341,7 +342,7 @@ class DbProxy:
             info = address_dict[address]
             if len(info['txs']) == 0:
                 continue
-            latest_tx = self.get_one(flags.FLAGS.transaction_info, {'id': info['txs'][-1]})
+            latest_tx = self.mongo_cli.get_one(flags.FLAGS.transaction_info, {'id': info['txs'][-1]})
             info.update({'block_hash': latest_tx['block_hash'], 'block_height': latest_tx['block_height']})
 
     def save_address_info(self, address_dict):
