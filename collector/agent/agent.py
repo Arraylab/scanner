@@ -17,7 +17,7 @@ class DataAgent:
         self.proxy = DbProxy()
         self.height = self.proxy.get_height()
         self.logger = Logger('agent')
-        self.logger.add_file_handler('agent.log')
+        self.logger.add_file_handler('agent')
 
     def request_genesis_block(self):
         genesis = self.fetcher.request_block(0)

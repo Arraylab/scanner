@@ -255,6 +255,8 @@ class DbProxy:
             info.update({'block_hash': latest_tx['block_hash'], 'block_height': latest_tx['block_height']})
 
     def remove_highest_block(self, block):
+        # if block['height'] in [840, 538, 502, 473, 1]:
+        #     raise Exception
         current_block_hash = block['hash']
         try:
             self.rollback_asset_info(block)
