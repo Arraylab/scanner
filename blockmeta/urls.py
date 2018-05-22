@@ -20,8 +20,6 @@ MODULES = [
     (blockmeta.search.api.SearchAPI, ('/api/search',), {'endpoint': 'search'}),
 
     (blockmeta.odin.api.OdinAPI, ('/api/odin',), {'endpoint': 'odin'})
-
-
 ]
 
 
