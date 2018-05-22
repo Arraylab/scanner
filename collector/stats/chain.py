@@ -10,7 +10,7 @@ DEFAULT_ASSET_ID = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 CONFIRM_NUM = 6
 
 
-class ChainStats:
+class ChainStats(object):
 
     def __init__(self):
 
@@ -23,6 +23,12 @@ class ChainStats:
 
     def get_block_by_height(self, height):
         return self.mongo_cli.get_one(flags.FLAGS.block_info, {'height': height})
+
+    def get_status(self):
+        state = self.mongo_cli.get_one(
+                table=FLAGS.chain_status, cond={
+                    FLAGS.block_height: 0})
+        return None if state is None else state
 
     # 上一个区块的出块间隔
     def get_last_block_interval(self, height):
@@ -56,7 +62,6 @@ class ChainStats:
     #     return sum / num
 
     # height高度前N个块的平均交易数
-    # TODO 加个计算高度之间的交易数，累加
     def get_tx_num(self, height, num):
         if height - num <= 0 or height <= 0 or num <= 0:
             return None
@@ -66,6 +71,16 @@ class ChainStats:
             tx_num = len(block['transactions'])
             sum += tx_num
         return sum / num
+
+    def get_tx_num_between(self, low, high):
+        if low <= 0 or high <= 0 or low >= high:
+            return None
+        sum = 0
+        for h in range(low, high):
+            block = self.get_block_by_height(h)
+            tx_num = len(block['transactions'])
+            sum += tx_num
+        return sum
 
     @staticmethod
     def get_recent_award(height):
@@ -118,7 +133,18 @@ class ChainStats:
             total_fee += f
         return total_fee / num
 
-    # 24小时内出块总数、平均时间、中位数、最大、最小; 交易总数、平均区块费用、平均交易费用、平均hash rate
+    @staticmethod
+    def get_interval(timestamps):
+        if not isinstance(timestamps, list):
+            return None
+        intervals = []
+        for i in range(len(timestamps) - 1):
+            interval = timestamps[i + 1] - timestamps[i]
+            intervals.append(interval)
+        intervals.sort()
+        return intervals
+
+    # 最近24小时内出块总数、平均时间、中位数、最大、最小; 交易总数、平均区块费用、平均交易费用、平均hash rate
     def chain_status(self):
         ticks = int(time.time())
         recent_height = self.get_recent_height() - CONFIRM_NUM
@@ -143,18 +169,11 @@ class ChainStats:
         timestamps.sort()
         average_block_time = 86400 / total_num
 
-        # 所有出块间隔列表
-        intervals = []
-        for y in range(len(timestamps) - 1):
-            interval = timestamps[y + 1] - timestamps[y]
-            intervals.append(interval)
-        intervals.sort()
-
+        #  24小时内出块总数、平均时间、中位数、最大、最小
+        intervals = self.get_interval(timestamps)
         length = len(intervals)
         median_interval = (intervals[length/2] + intervals[length/2-1]) / 2 if length % 2 == 0 else intervals[(length+1)/2]
-
-        # 24小时内出块总数、平均时间、中位数、最大、最小
-        tx_num_24 = self.get_tx_num(recent_height, total_num) * total_num - total_num
+        tx_num_24 = self.get_tx_num(recent_height, total_num) * total_num
         block_fee_24 = self.get_block_fee(recent_height, total_num)
         # hash_rate_24 = self.get_average_hash_rate(recent_height, total_num)
         tx_fee_24 = self.get_average_txs_fee_n(recent_height, total_num)
@@ -174,49 +193,92 @@ class ChainStats:
         }
         return result
 
-    # 两区块高度间的chain状态
+    # 两区块高度间的chain状态 [low, high)
     def chain_status_between(self, low, high):
+        if low <= 0 or high <= 0 or low >= high:
+            return None
         recent_block = self.get_block_by_height(high)
         block_hash = recent_block['block_hash']
         recent_timestamp = recent_block['timestamp']
+        remote_timestamp = self.get_block_by_height(low)['timestamp']
         total_block_num = high - low
         block_fee = self.get_block_fee(high, total_block_num)
-        total_tx_num = self.get_tx_num(high, total_block_num) * total_block_num - total_block_num
+        total_tx_num = 0
+        tx_fee = self.get_average_txs_fee_n(high, total_block_num)
+        average_block_interval = (recent_timestamp - remote_timestamp) / total_block_num
 
+        timestamps = []
+        for h in range(low, high):
+            block = self.get_block_by_height(h)
+            tx_num = len(block['transactions'])
+            total_tx_num += tx_num
+            t = block['timestamp']
+            timestamps.append(t)
+        intervals = self.get_interval(timestamps)
+        length = len(intervals)
+        if length == 0:
+            median_interval = None
+            max_interval = None
+            min_interval = None
+        else:
+            median_interval = (intervals[length / 2] + intervals[length / 2 - 1]) / 2 if length % 2 == 0 else intervals[(length + 1) / 2]
+            max_interval = intervals[-1]
+            min_interval = intervals[0]
 
+        result = {
+            "height": high,
+            "block_hash": block_hash,
+            "timestamp": recent_timestamp,
+            "block_num_24": total_block_num,
+            "tx_num_24": total_tx_num,
+            "block_fee_24": block_fee,
+            "tx_fee_24": tx_fee,
+            "average_block_interval": average_block_interval,
+            "median_block_interval": median_interval,
+            "max_block_interval": max_interval,
+            "min_block_interval": min_interval
+        }
+        return result
 
-    # 将历史数据存进db
-    def load(self):
+    # 历史每天的chain状态
+    def chain_status_history(self):
         recent_height = self.get_recent_height()
-        recent_block = self.get_block_by_height(recent_height)
         current_time = int(time.time())
         genesis_time = self.get_block_by_height(0)['timestamp']
         days = (current_time - genesis_time) / 86400
 
         result = []
         for d in range(days):
-            status = {}
             height_point = []
             for h in range(recent_height):
-                bl = self.get_block_by_height(h+1)
+                bl = self.get_block_by_height(h + 1)
                 if bl['timestamp'] < genesis_time + d * 86400:
                     continue
                 height_point.append(h)
 
+            if len(height_point) == 0:
+                break
+            for i in range(len(height_point)):
+                status = self.chain_status_between(height_point[i], height_point[i + 1])
+                result.append(status)
+        return result
 
+    # TODO
+    def genesis_status(self):
+        pass
 
-
-
-        tickers = 0
-        for h in range(recent_height):
-            block = self.get_block_by_height(h)
-            next_block = self.get_block_by_height(h+1)
-            diff_time = next_block['timestamp'] - block['timestamp']
-
+    # 将历史数据存进db
+    def load(self):
+        if self.get_status() is None:
+            status_history = self.chain_status_history()
+            self.mongo_cli.insert(flags.FLAGS.chain_status, status_history)
+        else:
+            pass
 
     def save(self):
         status = self.chain_status()
         self.mongo_cli.insert(flags.FLAGS.chain_status, status)
+
 
 
 if __name__ == '__main__':
