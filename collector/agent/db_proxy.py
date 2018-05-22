@@ -355,23 +355,20 @@ class DbProxy:
                 self.mongo_cli.delete_one(flags.FLAGS.address_info, {'address': info['address']})
                 continue
 
-            for asset_id in balances:
-                if cmp(balances[asset_id], {'balance': 0, 'sent': 0, 'recv': 0}) == 0:
-                    balances.pop(asset_id)
+            info['asset_balances'] = {asset_id: balance for asset_id, balance in balances.items()
+                                      if cmp(balance, {'balance': 0, 'sent': 0, 'recv': 0}) == 0}
 
             self.mongo_cli.update_one(flags.FLAGS.address_info, {'address': info['address']}, {'$set': info}, True)
 
     def save_asset_info(self, asset_dict):
         for asset_id in asset_dict:
             info = asset_dict[asset_id]
-            balances = asset_dict[asset_id]['balances']
+            balances = info['balances']
             if len(info['txs']) == 0:
                 self.mongo_cli.delete_one(flags.FLAGS.asset_info, {'asset_id': info['asset_id']})
                 continue
 
-            for address in balances:
-                if balances[address] == 0:
-                    balances.pop(address)
+            info['balances'] = {address: balance for address, balance in balances.items() if balance != 0}
 
             self.mongo_cli.update_one(flags.FLAGS.asset_info, {'asset_id': info['asset_id']}, {'$set': info}, True)
 
