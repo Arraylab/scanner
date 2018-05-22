@@ -196,7 +196,7 @@ class DbProxy:
                     continue
 
                 asset_info = asset_dict.get(tx_input['asset_id'], None) \
-                             or self.mongo_cli.get_one(flags.FLAGS.address_info, {'asset_id': asset_id, 'block_hash': block['hash']})
+                             or self.mongo_cli.get_one(flags.FLAGS.asset_info, {'asset_id': asset_id, 'block_hash': block['hash']})
                 if asset_info is None:
                     continue
 
@@ -255,8 +255,8 @@ class DbProxy:
             info.update({'block_hash': latest_tx['block_hash'], 'block_height': latest_tx['block_height']})
 
     def remove_highest_block(self, block):
-        # if block['height'] in [840, 538, 502, 473, 1]:
-        #     raise Exception
+        if block['height'] in [538, 502, 473, 1]:
+            raise Exception
         current_block_hash = block['hash']
         try:
             self.rollback_asset_info(block)
