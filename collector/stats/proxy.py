@@ -35,4 +35,3 @@ class DbProxy(object):
     def save_node(self, status):
         self.mongo_cli.insert(flags.FLAGS.node_status, status)
 
-

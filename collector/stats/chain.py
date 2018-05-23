@@ -2,12 +2,15 @@
 
 from proxy import DbProxy
 from tools import flags
+import gevent
 import sys
+import threading
 import time
 
 FLAGS = flags.FLAGS
 DEFAULT_ASSET_ID = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 CONFIRM_NUM = 6
+mutex = threading.Lock
 
 
 class ChainStats(object):
@@ -225,27 +228,41 @@ class ChainStats(object):
         }
         return result
 
+    def _compute(self, stats_list, low, high):
+        s = self.chain_status_between(low, high)
+        print '**height:', low
+        mutex.acquire(1)
+        stats_list.append(s)
+        mutex.release()
+
+
     # 历史每天的chain状态
     def chain_status_history(self):
         recent_height = self.proxy.get_recent_height()
         current_time = int(time.time())
+        print current_time
         genesis_time = self.proxy.get_block_by_height(0)['timestamp']
         days = (current_time - genesis_time) / 86400
+        print 'days:', days
 
+        height_point = []
         result = []
-        for d in range(days):
-            height_point = []
+        print "starting..."
+        for d in range(1, days+1):
             for h in range(recent_height):
                 bl = self.proxy.get_block_by_height(h + 1)
                 if bl['timestamp'] < genesis_time + d * 86400:
                     continue
                 height_point.append(h)
-
-            if len(height_point) == 0:
                 break
-            for i in range(len(height_point)):
-                status = self.chain_status_between(height_point[i], height_point[i + 1])
-                result.append(status)
+        print '--height_point--: ', height_point
+
+        # for i in range(len(height_point)-1):
+        #     print 'height_point: ', height_point[i]
+        jobs = [gevent.spawn(self._compute, result, height_point[i], height_point[i+1]) for i in range(len(height_point)-1)]
+                # status = self.chain_status_between(height_point[i], height_point[i + 1])
+                # result.append(status)
+        gevent.joinall(jobs)
         return result
 
     def genesis_status(self):
@@ -285,6 +302,6 @@ class ChainStats(object):
 if __name__ == '__main__':
     FLAGS(sys.argv)
     cs = ChainStats()
-    h = cs.genesis_status()
+    h = cs.chain_status_history()
     print h
     # print cs.get_last_block_interval(21349)

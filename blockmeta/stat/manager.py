@@ -17,14 +17,14 @@ class StatManager:
 
     def list_chain_stats(self):
         try:
-            return self.driver.get_chain_status()
+            return self.driver.request_chain_status()
         except Exception, e:
             self.logger.error("StatManager.get_chain_status Error: %s" % str(e))
             raise Exception("get_chain_status error: %s", e)
 
     def list_node_stats(self):
         try:
-            return self.driver.get_node_status()
+            return self.driver.request_node_status()
         except Exception, e:
             self.logger.error("StatManager.get_node_status Error: %s" % str(e))
             raise Exception("get_node_status error: %s", e)

@@ -19,8 +19,8 @@ NODE_STATS_TIMEOUT = 5
 
 class NodeStats(object):
 
-    def __init__(self, hosts):
-        self.hosts = hosts
+    def __init__(self):
+        self.hosts = []
         self.online_num = 0
         self.online_node = []
         self.time_lapse = 0
