@@ -265,7 +265,25 @@ class ChainStats(object):
 
     # TODO
     def genesis_status(self):
-        pass
+        block = self.get_block_by_height(0)
+        print block
+        tx_num = len(block['transactions'])
+
+        initial_status = {
+            "height": 0,
+            "block_hash": block['hash'],
+            "timestamp": block['timestamp'],
+            "block_num_24": 1,
+            "tx_num_24": tx_num,
+            "block_fee_24": 0,
+            "tx_fee_24": 0,
+            "average_block_interval": 0,
+            "median_block_interval": 0,
+            "max_block_interval": 0,
+            "min_block_interval": 0
+        }
+        return initial_status
+
 
     # 将历史数据存进db
     def load(self):
@@ -284,6 +302,6 @@ class ChainStats(object):
 if __name__ == '__main__':
     FLAGS(sys.argv)
     cs = ChainStats()
-    h = cs.get_recent_height()
+    h = cs.genesis_status()
     print h
-    print cs.get_last_block_interval(21349)
+    # print cs.get_last_block_interval(21349)
