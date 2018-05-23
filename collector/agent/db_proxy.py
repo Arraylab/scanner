@@ -30,7 +30,6 @@ class DbProxy:
         self.set_height(block['height'])
 
     def insert_block(self, block):
-        print block['hash']
         block.update({'hash_rate': self.fetcher.request_hash_rate(block['hash']) if block['height'] > 0 else -1})
         for transaction in block['transactions']:
             is_coinbase = False
