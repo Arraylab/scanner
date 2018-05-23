@@ -38,6 +38,8 @@ class Fetcher:
         return response['data']['hash_rate']
 
     def request_decode_program(self, program):
+        if len(program) == 0:
+            return []
         params = json.dumps({'program': program})
         url = '/'.join([self.url_base, flags.FLAGS.decode_program])
         response = requests.post(url, params).json()

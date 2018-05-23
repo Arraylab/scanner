@@ -1,5 +1,6 @@
 from collector.log import Logger
 from collector.db.mongodriver import MongodbClient
+from collector.agent.fetcher import Fetcher
 from tools import flags
 
 
@@ -8,6 +9,7 @@ class DbProxy:
 
     def __init__(self):
         self.url_base = flags.FLAGS.bytomd_rpc
+        self.fetcher = Fetcher()
         self.logger = Logger('dbproxy')
         self.logger.add_file_handler('dbproxy.log')
         self.mongo_cli = MongodbClient(host=flags.FLAGS.mongo_bytom_host, port=flags.FLAGS.mongo_bytom_port)
@@ -21,11 +23,26 @@ class DbProxy:
         self.mongo_cli.update_one(flags.FLAGS.db_status, {}, {'$set': {flags.FLAGS.block_height: height}}, True)
 
     def save_block(self, block):
-        self.mongo_cli.insert(flags.FLAGS.block_info, block)
+        self.insert_block(block)
         self.insert_transactions(block)
         self.index_address(block)
         self.update_asset_status(block)
         self.set_height(block['height'])
+
+    def insert_block(self, block):
+        block.update({'hash_rate': self.fetcher.request_hash_rate(block['hash'])})
+        for transaction in block['transactions']:
+            is_coinbase = False
+            for tx_input in transaction['inputs']:
+                if tx_input['type'] == 'coinbase':
+                    is_coinbase = True
+                elif tx_input['type'] == 'issue':
+                    tx_input.update({'code': self.fetcher.request_decode_program(tx_input.get('issuance_program', ''))})
+            for tx_output in transaction['outputs']:
+                if is_coinbase:
+                    block.update({'miner': tx_output.get('address', '')})
+                tx_output.update({'code': self.fetcher.request_decode_program(tx_output.get('control_program', ''))})
+        self.mongo_cli.insert(flags.FLAGS.block_info, block)
 
     def insert_transactions(self, block):
         for transaction in block['transactions']:
@@ -113,6 +130,8 @@ class DbProxy:
             'asset_definition': {},
             'amount': 0,
             'issue_by': '',
+            'issuance_program': '',
+            'code': ''
         }
         return asset_info
 
@@ -137,6 +156,8 @@ class DbProxy:
                         'asset_definition': tx_input['asset_definition'],
                         'amount': tx_input['amount'],
                         'issue_by': transaction['id'],
+                        'issuance_program': tx_input.get('issuance_program', ''),
+                        'code': self.fetcher.request_decode_program(tx_input.get('issuance_program', ''))
                     })
 
                 elif tx_input_type == 'spend':
