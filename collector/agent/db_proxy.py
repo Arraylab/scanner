@@ -201,7 +201,7 @@ class DbProxy:
                     continue
 
                 if tx_input_type == 'issue':
-                    asset_info['txs'] = {}
+                    asset_info['txs'] = []
                 elif tx_input_type == 'spend':
                     address = tx_input.get('address', None)
                     if address is None:
@@ -255,8 +255,6 @@ class DbProxy:
             info.update({'block_hash': latest_tx['block_hash'], 'block_height': latest_tx['block_height']})
 
     def remove_highest_block(self, block):
-        if block['height'] in [538, 502, 473, 1]:
-            raise Exception
         current_block_hash = block['hash']
         try:
             self.rollback_asset_info(block)

@@ -13,6 +13,7 @@ gflags.DEFINE_string('get_block_count', 'get-block-count', '')
 gflags.DEFINE_string('tx_i_id', 'spent_output_id', '')
 gflags.DEFINE_string('tx_o_id', 'id', '')
 gflags.DEFINE_string('get_hash_rate', 'get-hash-rate', '')
+gflags.DEFINE_string('decode_program', 'decode-program', '')
 
 gflags.DEFINE_bool('MONGODB_ENABLE', True, 'switch')
 gflags.DEFINE_string('mongo_bytom_host', '127.0.0.1', 'mongodb host')
