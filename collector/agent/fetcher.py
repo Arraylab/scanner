@@ -29,7 +29,7 @@ class Fetcher:
         return response['data'][flags.FLAGS.block_count]
 
     def request_hash_rate(self, block_hash):
-        params = json.dumps({'block_hash': block_hash}) if type(block_hash) == str \
+        params = json.dumps({'block_hash': block_hash}) if type(block_hash) != int \
             else json.dumps({'block_height': block_hash})
         url = '/'.join([self.url_base, flags.FLAGS.get_hash_rate])
         response = requests.post(url, params).json()
