@@ -55,11 +55,9 @@ def wrap_response(data='', status='success', code='200', message='', **kwargs):
 def wrap_error_response(message='', data='', status='failure', code='500'):
     lang = g.lang if g.get('lang', None) else 'zh'
     response = ERROR_MSG[lang][message]
-    print response
     return dict(status=status, data=data, code=code, message=response)
 
 
 def valid_addr(addr):
     addr.strip().lower()
     return (ADDRESS_42_RE.match(addr) or ADDRESS_62_RE.match(addr)) is not None
-

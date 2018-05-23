@@ -13,7 +13,7 @@ class AddressAPI(Resource):
     def __init__(self):
         self.manager = AddressManager()
         self.parser = reqparse.RequestParser()
-        self.parser.add_argument('page', type=int, help='transaction page number')
+        self.parser.add_argument('p', type=int, help='transaction page number')
 
     def get(self, address):
         address.lower()

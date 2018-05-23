@@ -22,7 +22,7 @@ def configure_logging(app):
 
 def create_app():
     app = Flask(DEFAULT_APP_NAME, static_folder='static', static_url_path='')
-    # register log
+    # register log.py
     configure_logging(app)
     # register rest url
     configure_modules(app)

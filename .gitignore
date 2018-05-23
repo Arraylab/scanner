@@ -8,3 +8,7 @@
 *.egg-info
 logs/
 collector/logs
+blockmeta/utils/*.pem
+blockmeta/utils/*.json
+blockmeta/key/
+

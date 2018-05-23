@@ -12,7 +12,8 @@ gflags.DEFINE_string('get_block_height_arg', 'block_height', '')
 gflags.DEFINE_string('get_block_count', 'get-block-count', '')
 gflags.DEFINE_string('tx_i_id', 'spent_output_id', '')
 gflags.DEFINE_string('tx_o_id', 'id', '')
-
+gflags.DEFINE_string('get_hash_rate', 'get-hash-rate', '')
+gflags.DEFINE_string('decode_program', 'decode-program', '')
 
 gflags.DEFINE_bool('MONGODB_ENABLE', True, 'switch')
 gflags.DEFINE_string('mongo_bytom_host', '127.0.0.1', 'mongodb host')
@@ -29,6 +30,7 @@ gflags.DEFINE_string('db_status', 'status', '')
 gflags.DEFINE_string('address_info', 'address_info', '')
 gflags.DEFINE_string('block_info', 'block_info', '')
 gflags.DEFINE_string('transaction_info', 'transaction_info', '')
+gflags.DEFINE_string('asset_info', 'asset_info', '')
 gflags.DEFINE_string('chain_status', 'chain_status', '')
 gflags.DEFINE_string('node_status', 'node_status', '')
 
@@ -65,8 +67,8 @@ gflags.DEFINE_string('tx_fee', 'fee', '')
 
 gflags.DEFINE_string('version', 'version', '')
 
-# log
-gflags.DEFINE_string('DEBUG_LOG', 'logs/debug.log', 'location')
-gflags.DEFINE_string('ERROR_LOG', 'logs/error.log', 'location')
-gflags.DEFINE_string('INFO_LOG', 'logs/info.log', 'location')
-gflags.DEFINE_string('WARN_LOG', 'logs/warn.log', 'location')
+# log.py
+gflags.DEFINE_string('DEBUG_LOG', 'logs/debug.log.py', 'location')
+gflags.DEFINE_string('ERROR_LOG', 'logs/error.log.py', 'location')
+gflags.DEFINE_string('INFO_LOG', 'logs/info.log.py', 'location')
+gflags.DEFINE_string('WARN_LOG', 'logs/warn.log.py', 'location')

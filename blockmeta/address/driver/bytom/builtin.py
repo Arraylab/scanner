@@ -28,10 +28,11 @@ class BuiltinDriver:
                 'sent': 0,
                 'recv': 0,
                 'tx_num': 0,
-                'txs': []
+                'txs': [],
+                'asset_balance': {}
             }
 
-        fields = ['balance', 'sent', 'recv']
+        fields = ['balance', 'sent', 'recv', 'asset_balances']
         result = {}
         for field in fields:
             result[field] = addr[field]
