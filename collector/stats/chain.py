@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from collector.db.mongodriver import MongodbClient
+from proxy import DbProxy
 from tools import flags
 import sys
 import time
@@ -13,22 +13,7 @@ CONFIRM_NUM = 6
 class ChainStats(object):
 
     def __init__(self):
-
-        self.mongo_cli = MongodbClient(host=FLAGS.mongo_bytom_host, port=FLAGS.mongo_bytom_port)
-        self.mongo_cli.use_db(flags.FLAGS.mongo_bytom)
-
-    def get_recent_height(self):
-        state = self.mongo_cli.get(flags.FLAGS.db_status)
-        return None if state is None else state[flags.FLAGS.block_height]
-
-    def get_block_by_height(self, height):
-        return self.mongo_cli.get_one(flags.FLAGS.block_info, {'height': height})
-
-    def get_status(self):
-        state = self.mongo_cli.get_one(
-                table=FLAGS.chain_status, cond={
-                    FLAGS.block_height: 0})
-        return None if state is None else state
+        self.proxy = DbProxy()
 
     # 上一个区块的出块间隔
     def get_last_block_interval(self, height):
@@ -36,7 +21,7 @@ class ChainStats(object):
             return None
         times = []
         for h in range(height-1, height+1):
-            block = self.get_block_by_height(h)
+            block = self.proxy.get_block_by_height(h)
             time = block.get(FLAGS.timestamp)
             times.append(time)
         return times[1] - times[0]
@@ -45,7 +30,7 @@ class ChainStats(object):
     def get_difficulty(self, height):
         if height <= 0 or height is None:
             return None
-        block = self.get_block_by_height(h)
+        block = self.proxy.get_block_by_height(h)
         return block.get(FLAGS.difficulty)
 
     # 指定高度块的hash rate
@@ -67,7 +52,7 @@ class ChainStats(object):
             return None
         sum = 0
         for h in range(height-num+1, height+1):
-            block = self.get_block_by_height(h)
+            block = self.proxy.get_block_by_height(h)
             tx_num = len(block['transactions'])
             sum += tx_num
         return sum / num
@@ -77,7 +62,7 @@ class ChainStats(object):
             return None
         sum = 0
         for h in range(low, high):
-            block = self.get_block_by_height(h)
+            block = self.proxy.get_block_by_height(h)
             tx_num = len(block['transactions'])
             sum += tx_num
         return sum
@@ -95,7 +80,7 @@ class ChainStats(object):
             return None
         sum = 0
         for h in range(height-num, height+1):
-            block = self.get_block_by_height(h)
+            block = self.proxy.get_block_by_height(h)
             coinbase = block['transactions'][0]
             fee = coinbase['outputs'][0]['amount'] - self.get_recent_award(height)
             sum += fee
@@ -115,7 +100,7 @@ class ChainStats(object):
 
     # 交易平均手续费（x neu/byte)
     def get_average_txs_fee(self, height):
-        block = self.get_block_by_height(height)
+        block = self.proxy.get_block_by_height(height)
         total_size = 0
         total_fee = 0
         for tx in block['transactions'][1:]:
@@ -147,10 +132,10 @@ class ChainStats(object):
     # 最近24小时内出块总数、平均时间、中位数、最大、最小; 交易总数、平均区块费用、平均交易费用、平均hash rate
     def chain_status(self):
         ticks = int(time.time())
-        recent_height = self.get_recent_height() - CONFIRM_NUM
-        block = self.get_block_by_height(recent_height)
+        recent_height = self.proxy.get_recent_height() - CONFIRM_NUM
+        block = self.proxy.get_block_by_height(recent_height)
         recent_timestamp = block['timestamp']
-        block_hash = block['block_hash']
+        block_hash = block['hash']
         if recent_timestamp + 86400 < ticks:
             return []
         ti = ticks
@@ -160,10 +145,10 @@ class ChainStats(object):
         timestamps = []
         while ticks - ti < 86400:
             height = height - 1
-            ti = self.get_block_by_height(height)['timestamp']
+            ti = self.proxy.get_block_by_height(height)['timestamp']
             timestamps.append(ti)
         for i in range(1, CONFIRM_NUM+1):
-            t = self.get_block_by_height(height-i)['timestamp']
+            t = self.proxy.get_block_by_height(height-i)['timestamp']
             timestamps.append(t)
         total_num = recent_height - height + CONFIRM_NUM
         timestamps.sort()
@@ -197,10 +182,10 @@ class ChainStats(object):
     def chain_status_between(self, low, high):
         if low <= 0 or high <= 0 or low >= high:
             return None
-        recent_block = self.get_block_by_height(high)
-        block_hash = recent_block['block_hash']
+        recent_block = self.proxy.get_block_by_height(high)
+        block_hash = recent_block['hash']
         recent_timestamp = recent_block['timestamp']
-        remote_timestamp = self.get_block_by_height(low)['timestamp']
+        remote_timestamp = self.proxy.get_block_by_height(low)['timestamp']
         total_block_num = high - low
         block_fee = self.get_block_fee(high, total_block_num)
         total_tx_num = 0
@@ -209,7 +194,7 @@ class ChainStats(object):
 
         timestamps = []
         for h in range(low, high):
-            block = self.get_block_by_height(h)
+            block = self.proxy.get_block_by_height(h)
             tx_num = len(block['transactions'])
             total_tx_num += tx_num
             t = block['timestamp']
@@ -242,16 +227,16 @@ class ChainStats(object):
 
     # 历史每天的chain状态
     def chain_status_history(self):
-        recent_height = self.get_recent_height()
+        recent_height = self.proxy.get_recent_height()
         current_time = int(time.time())
-        genesis_time = self.get_block_by_height(0)['timestamp']
+        genesis_time = self.proxy.get_block_by_height(0)['timestamp']
         days = (current_time - genesis_time) / 86400
 
         result = []
         for d in range(days):
             height_point = []
             for h in range(recent_height):
-                bl = self.get_block_by_height(h + 1)
+                bl = self.proxy.get_block_by_height(h + 1)
                 if bl['timestamp'] < genesis_time + d * 86400:
                     continue
                 height_point.append(h)
@@ -263,10 +248,8 @@ class ChainStats(object):
                 result.append(status)
         return result
 
-    # TODO
     def genesis_status(self):
-        block = self.get_block_by_height(0)
-        print block
+        block = self.proxy.get_block_by_height(0)
         tx_num = len(block['transactions'])
 
         initial_status = {
@@ -284,19 +267,19 @@ class ChainStats(object):
         }
         return initial_status
 
-
     # 将历史数据存进db
     def load(self):
-        if self.get_status() is None:
+        if self.proxy.get_status() is None:
+            status_genesis = self.genesis_status()
             status_history = self.chain_status_history()
-            self.mongo_cli.insert(flags.FLAGS.chain_status, status_history)
+            status_history.append(status_genesis)
+            self.proxy.save_chain_patch(status_history)
         else:
             pass
 
     def save(self):
         status = self.chain_status()
-        self.mongo_cli.insert(flags.FLAGS.chain_status, status)
-
+        self.proxy.save_chain(status)
 
 
 if __name__ == '__main__':
