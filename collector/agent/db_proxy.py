@@ -11,7 +11,7 @@ class DbProxy:
         self.url_base = flags.FLAGS.bytomd_rpc
         self.fetcher = Fetcher()
         self.logger = Logger('dbproxy')
-        self.logger.add_file_handler('dbproxy.log')
+        self.logger.add_file_handler('dbproxy')
         self.mongo_cli = MongodbClient(host=flags.FLAGS.mongo_bytom_host, port=flags.FLAGS.mongo_bytom_port)
         self.mongo_cli.use_db(flags.FLAGS.mongo_bytom)
 
