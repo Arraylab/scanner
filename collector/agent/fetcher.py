@@ -46,5 +46,5 @@ class Fetcher:
         if response['status'] == 'fail':
             raise Exception('decode program failed: %s', response['msg'])
         code = response['data']['instructions'].split('\n')
-        codes = [e for e in code if len(e.strip()) > 0]
+        codes = [e.strip() for e in code if len(e.strip()) > 0]
         return codes
