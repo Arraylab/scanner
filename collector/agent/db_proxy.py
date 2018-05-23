@@ -356,7 +356,7 @@ class DbProxy:
                 continue
 
             info['asset_balances'] = {asset_id: balance for asset_id, balance in balances.items()
-                                      if cmp(balance, {'balance': 0, 'sent': 0, 'recv': 0}) == 0}
+                                      if cmp(balance, {'balance': 0, 'sent': 0, 'recv': 0}) != 0}
 
             self.mongo_cli.update_one(flags.FLAGS.address_info, {'address': info['address']}, {'$set': info}, True)
 
