@@ -7,6 +7,7 @@ import blockmeta.search.api
 import blockmeta.tx.api
 import blockmeta.stat.api
 import blockmeta.odin.api
+import blockmeta.asset.api
 
 # modules = [(handle, urls, args)]
 MODULES = [
@@ -23,7 +24,10 @@ MODULES = [
     (blockmeta.stat.api.ChainStatsAPI, ('/api/chain-stats',), {'endpoint': 'chain-stats'}),
     (blockmeta.stat.api.NodeStatsAPI, ('/api/node-stats',), {'endpoint': 'node-stats'}),
 
-    (blockmeta.odin.api.OdinAPI, ('/api/odin',), {'endpoint': 'odin'})
+
+    (blockmeta.odin.api.OdinAPI, ('/api/odin',), {'endpoint': 'odin'}),
+
+    (blockmeta.asset.api.AssetAPI, ('/api/asset/<string:asset_id>',), {'endpoint': 'asset'})
 ]
 
 
