@@ -10,3 +10,6 @@ class AssetManager:
 
     def handle_asset(self, asset_id, page=1, tag='txs'):
         return self.driver.request_asset_info(asset_id, page, tag)
+
+    def list_assets(self, page=1):
+        return self.driver.list_assets(page)

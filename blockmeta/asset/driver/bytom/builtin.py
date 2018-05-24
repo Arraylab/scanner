@@ -22,16 +22,35 @@ class BuiltinDriver:
 		asset_info = self._show_asset(asset_object, page, tag)
 		return asset_info
 
-	def _show_asset(self, asset_object, page, tag='txs'):
-		if asset_object is None:
-			return {}
-		print tag
+	def list_assets(self, page=1):
+		asset_num = self.mongo_cli.get_size(table=FLAGS.asset_info)
+		page_max = (asset_num - 1) / 10 + 1
+		page = min(page, page_max)
+		skip = (page-1) * 10
+		asset_objects = self.mongo_cli.\
+			get_many(table=FLAGS.asset_info, cond={}, n=10, sort_key='block_height', ascend=False, skip=skip)
+		assets = [self._show_asset_base_info(asset_object) for asset_object in asset_objects]
+		result = {
+			'asset_num': asset_num,
+			'assets': assets,
+			'page': page,
+			'pages': page_max
+		}
+		return result
+
+	def _show_asset_base_info(self, asset_object):
 		fields = ['amount', 'asset_definition', 'code', 'issue_by', 'retire']
 		result = {field: asset_object.get(field) for field in fields}
 		result['issue_timestamp'] = self._get_tx_timestamp(asset_object.get('issue_by'))
 		result['update_timestamp'] = self._get_block_timestamp(asset_object.get('block_hash'))
 		result['tx_num'] = len(asset_object.get('txs'))
 		result['holder_num'] = len(asset_object.get('balances'))
+		return result
+
+	def _show_asset(self, asset_object, page, tag='txs'):
+		if asset_object is None:
+			return {}
+		result = self._show_asset_base_info(asset_object)
 		tag = 'txs' if tag not in ['txs', 'balances'] else tag
 		page_max = len(asset_object.get(tag)) / 10 + 1
 		page = min(page_max, page)

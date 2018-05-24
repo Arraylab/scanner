@@ -25,21 +25,19 @@ class AssetAPI(Resource):
 			abort(404, message="asset not found")
 		return result
 
-# class AssetListAPI(Resource):
-# 	def __init__(self):
-# 		self.manager = AssetManager()
-# 		self.parser = reqparse.RequestParser()
-# 		self.parser.add_argument('page', type=int, help='page number')
-#
-# 	def get(self):
-# 		try:
-# 			args = self.parser.parse_args()
-# 			page = args.get('page')
-# 			if not isinstance(page, int) or page <= 0:
-# 				page = 1
-# 			result = self.manager.list_blocks(page)
-#
-# 			return util.wrap_response(data=result)
-# 		except Exception, e:
-# 			self.logger.error("BlockListAPI.get Error: %s" % str(e))
-# 			return util.wrap_error_response('block_error')
+
+class AssetListAPI(Resource):
+	def __init__(self):
+		self.manager = AssetManager()
+		self.parser = reqparse.RequestParser()
+		self.parser.add_argument('page', type=int, help='page number')
+
+	def get(self):
+		args = self.parser.parse_args()
+		page = args.get('page')
+		page = 1 if page is None or not isinstance(page, int) or page <= 0 else page
+		result = self.manager.list_assets(page)
+		return result
+
+
+
