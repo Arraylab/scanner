@@ -24,16 +24,18 @@ class DbProxy(object):
     def get_block_by_height(self, height):
         return self.mongo_cli.get_one(flags.FLAGS.block_info, {'height': height})
 
-    def get_blocks_in_range(self, start, end):
+
+
+    def get_timestamps_in_range(self, start, end):
         try:
-            blocks = self.mongo_cli.get_many(
+            timestamps = self.mongo_cli.get_many(
                 table=FLAGS.block_info,
+                items={"timestamp": 1, "_id": 0},
                 n=end-start,
-                sort_key=FLAGS.block_height,
                 skip=start)
         except Exception as e:
             raise exception.DBError(e)
-        return blocks
+        return timestamps
 
     def get_status(self):
         try:

@@ -5,6 +5,7 @@ from tools import flags
 
 FLAGS = flags.FLAGS
 
+
 class MongodbClient:
     def __init__(self, host, port):
         self.conn = MongoClient(host, port, maxPoolSize=300)

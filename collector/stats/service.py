@@ -7,7 +7,7 @@ import sys
 import threading
 import time
 
-POLLTIMER = 86400
+POLLTIMER = 6
 
 
 class StatusService(object):
@@ -18,8 +18,13 @@ class StatusService(object):
 
     def count(self):
         global timer
+        print "meet you again"
+        start = time.time()
         self.chain_stats.save()
         self.node_stats.save()
+        end = time.time()
+        print "cost ", end - start
+        print "ready to poll"
         timer = threading.Timer(POLLTIMER, self.count)
         timer.start()
 
