@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from collector.db.mongodriver import MongodbClient
+from blockmeta.db.mongo import MongodbClient
 from tools import exception, flags
 import sys
 
@@ -68,24 +68,6 @@ class DbProxy(object):
         except Exception as e:
             raise exception.DBError(e)
         return None if stats is None else stats
-
-    def save_chain(self, status):
-        try:
-            self.mongo_cli.insert(flags.FLAGS.node_status, status)
-        except Exception as e:
-            raise exception.DBError(e)
-
-    def save_chain_patch(self, status_list):
-        try:
-            self.mongo_cli.insert_many(flags.FLAGS.chain_status, status_list)
-        except Exception as e:
-            raise exception.DBError(e)
-
-    def save_node(self, status):
-        try:
-            self.mongo_cli.insert(flags.FLAGS.node_status, status)
-        except Exception as e:
-            raise exception.DBError(e)
 
     def request_node_status(self):
         try:

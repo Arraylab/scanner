@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from collector.agent.fetcher import Fetcher
 from proxy import DbProxy
 from tools import flags
-import gevent
-import sys
 import threading
 import time
 
@@ -18,7 +15,6 @@ class ChainStats(object):
 
     def __init__(self):
         self.proxy = DbProxy()
-        self.fetcher = Fetcher()
 
     # 上一个区块的出块间隔
     def get_last_block_interval(self, height):
@@ -41,15 +37,14 @@ class ChainStats(object):
     # 指定高度块的hash rate
 
     # 前N个块的平均hash rate
-    # def get_average_hash_rate(self, height, num):
-    #     if height - num <= 0 or height <= 0 or num <= 0 or height is None:
-    #         return None
-    #     sum = 0
-    #     for h in range(height-num, height+1):
-    #
-    #         hash_rate = response['data']['hash_rate']
-    #         sum += hash_rate
-    #     return sum / num
+    def get_average_hash_rate(self, height, num):
+        if height - num <= 0 or height <= 0 or num <= 0 or height is None:
+            return None
+        hash_rates = self.proxy.get_hash_rate_in_range(height-num, height+1)
+        sum = 0
+        for hr in hash_rates:
+            sum += hr['hash_rate']
+        return sum / num
 
     # height高度前N个块的平均交易数
     def get_tx_num(self, height, num):
@@ -136,17 +131,19 @@ class ChainStats(object):
         return intervals
 
     # 最近24小时内出块总数、平均时间、中位数、最大、最小; 交易总数、平均区块费用、平均交易费用、平均hash rate
-    def chain_status(self):
+    def get_chain_status(self):
         ticks = int(time.time())
         recent_height = self.proxy.get_recent_height() - CONFIRM_NUM
         block = self.proxy.get_block_by_height(recent_height)
         recent_timestamp = block['timestamp']
+        print 'recent_timestamp:', recent_timestamp
         block_hash = block['hash']
         if recent_timestamp + 86400 < ticks:
             return []
 
         close_height = recent_height - 576
         close_time = self.proxy.get_block_by_height(close_height)['timestamp']
+        print 'close_time:', close_time
         if ticks - close_time < 86400:
             while ticks - close_time < 86400:
                 close_height -= 1
@@ -159,12 +156,14 @@ class ChainStats(object):
         # 所有块时间戳
         tps = self.proxy.get_timestamps_in_range(close_height, recent_height)
         timestamps = [t['timestamp'] for t in tps]
+        print 'timestamps:', timestamps
 
         for i in range(1, CONFIRM_NUM + 1):
             t = self.proxy.get_block_by_height(close_height - i)['timestamp']
             timestamps.append(t)
         total_block_num = recent_height - close_height + CONFIRM_NUM
         timestamps.sort()
+        print 'timestamps-2:', timestamps
         average_block_time = 86400 / total_block_num
 
         #  24小时内出块总数、平均时间、中位数、最大、最小
@@ -174,153 +173,21 @@ class ChainStats(object):
             (length + 1) / 2]
         tx_num_24 = self.get_tx_num(recent_height, total_block_num) * total_block_num
         block_fee_24 = self.get_block_fee(recent_height, total_block_num)
-        # hash_rate_24 = self.get_average_hash_rate(recent_height, total_num)
+        hash_rate_24 = self.get_average_hash_rate(recent_height, total_block_num)
         tx_fee_24 = self.get_average_txs_fee_n(recent_height, total_block_num)
 
         result = {
             "height": recent_height,
             "block_hash": block_hash,
             "timestamp": recent_timestamp,
-            "block_num_24": total_block_num,
-            "tx_num_24": tx_num_24,
-            "block_fee_24": block_fee_24,
-            "tx_fee_24": tx_fee_24,
+            "hash_rate": hash_rate_24,
+            "block_num": total_block_num,
+            "tx_num": tx_num_24,
+            "average_block_fee": block_fee_24,
+            "average_tx_fee": tx_fee_24,
             "average_block_interval": average_block_time,
             "median_block_interval": median_interval,
             "max_block_interval": intervals[-1],
             "min_block_interval": intervals[0]
         }
         return result
-
-    # 两区块高度间的chain状态 [low, high)
-    def chain_status_between(self, low, high):
-        if low <= 0 or high <= 0 or low >= high:
-            return None
-        recent_block = self.proxy.get_block_by_height(high)
-        block_hash = recent_block['hash']
-        recent_timestamp = recent_block['timestamp']
-        remote_timestamp = self.proxy.get_block_by_height(low)['timestamp']
-        total_block_num = high - low
-        block_fee = self.get_block_fee(high, total_block_num)
-        total_tx_num = 0
-        tx_fee = self.get_average_txs_fee_n(high, total_block_num)
-        average_block_interval = (recent_timestamp - remote_timestamp) / total_block_num
-
-        timestamps = []
-        for h in range(low, high):
-            block = self.proxy.get_block_by_height(h)
-            tx_num = len(block['transactions'])
-            total_tx_num += tx_num
-            t = block['timestamp']
-            timestamps.append(t)
-        intervals = self.get_interval(timestamps)
-        length = len(intervals)
-        if length == 0:
-            median_interval = None
-            max_interval = None
-            min_interval = None
-        else:
-            median_interval = (intervals[length / 2] + intervals[length / 2 - 1]) / 2 if length % 2 == 0 else intervals[(length + 1) / 2]
-            max_interval = intervals[-1]
-            min_interval = intervals[0]
-
-        result = {
-            "height": high,
-            "block_hash": block_hash,
-            "timestamp": recent_timestamp,
-            "block_num_24": total_block_num,
-            "tx_num_24": total_tx_num,
-            "block_fee_24": block_fee,
-            "tx_fee_24": tx_fee,
-            "average_block_interval": average_block_interval,
-            "median_block_interval": median_interval,
-            "max_block_interval": max_interval,
-            "min_block_interval": min_interval
-        }
-        return result
-
-    def _compute(self, stats_list, low, high):
-        s = self.chain_status_between(low, high)
-        print '**height:', low
-        mutex.acquire(1)
-        stats_list.append(s)
-        mutex.release()
-
-    def check_syn_height(self):
-        chain_height = self.fetcher.request_chain_height()
-        db_height = self.proxy.get_recent_height()
-        print 'chain height: ', chain_height
-        print 'db_height: ', db_height
-        if db_height < chain_height:
-            return False
-        return True
-
-    # 历史每天的chain状态
-    def chain_status_history(self):
-        while not self.check_syn_height():
-            time.sleep(10)
-        recent_height = self.proxy.get_recent_height()
-        current_time = self.proxy.get_block_by_height(recent_height)['timestamp']
-
-        print current_time
-        genesis_time = self.proxy.get_block_by_height(0)['timestamp']
-        days = (current_time - genesis_time) / 86400
-        print 'days:', days
-
-        tps = self.proxy.get_timestamps_in_range(0, recent_height+1)
-        timestamps = [t['timestamp'] for t in tps]
-        print 'timestamps', tps, timestamps
-
-        height_point = []
-        point = genesis_time
-        for i in range(len(timestamps)):
-            if timestamps[i] - point < 86400:
-                continue
-            height_point.append(i)
-            point = timestamps[i]
-
-        print 'height point: ', height_point
-        result = []
-        jobs = [gevent.spawn(self._compute, result, height_point[i], height_point[i+1]) for i in range(len(height_point)-1)]
-        gevent.joinall(jobs)
-        print 'chain stats: ', result
-        return result
-
-    def genesis_status(self):
-        block = self.proxy.get_block_by_height(0)
-        while block is None:
-            time.sleep(2)
-            block = self.proxy.get_block_by_height(0)
-        tx_num = len(block['transactions'])
-
-        initial_status = {
-            "height": 0,
-            "block_hash": block['hash'],
-            "timestamp": block['timestamp'],
-            "block_num_24": 1,
-            "tx_num_24": tx_num,
-            "block_fee_24": 0,
-            "tx_fee_24": 0,
-            "average_block_interval": 0,
-            "median_block_interval": 0,
-            "max_block_interval": 0,
-            "min_block_interval": 0
-        }
-        return initial_status
-
-    # 将历史数据存进db
-    def load(self):
-        if self.proxy.get_status() is None:
-            status_genesis = self.genesis_status()
-            print 'status_genesis', status_genesis
-            status_history = self.chain_status_history()
-            print 'status_history', status_history
-            status_history.append(status_genesis)
-            self.proxy.save_chain_patch(status_history)
-        else:
-            pass
-
-    def save(self):
-        status = self.chain_status()
-        print 'status: ', status
-        self.proxy.save_chain(status)

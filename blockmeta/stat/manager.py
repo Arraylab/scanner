@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from blockmeta.constant import BASE_URL
 from driver.bytom.builtin import BuiltinDriver
 from flask import current_app
 from tools import flags
@@ -13,7 +12,7 @@ class StatManager:
     """Manages the tx query"""
     def __init__(self):
         self.logger = current_app.logger
-        self.driver = BuiltinDriver(BASE_URL)
+        self.driver = BuiltinDriver()
 
     def list_chain_stats(self):
         try:
