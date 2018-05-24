@@ -330,6 +330,7 @@ http://127.0.0.1:5000/api/asset/2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6
 }
 ```
 ### show holders
+http://127.0.0.1:5000/api/asset/2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6bed40023459d4214?tag=balances
 ```
 {
     "amount": 10000000000,
