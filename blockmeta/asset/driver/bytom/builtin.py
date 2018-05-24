@@ -1,5 +1,7 @@
 # coding=utf-8
-
+import sys
+sys.path.append('../')
+sys.path.append('../../')
 from blockmeta.db.mongo import MongodbClient
 from tools import flags
 
@@ -64,10 +66,10 @@ class BuiltinDriver:
 
 	def _get_block_timestamp(self, index):
 		cond = {'height': index} if type(index) == int else {'hash': index}
-		timestamp = self.mongo_cli.get_one(table=FLAGS.block_info, cond=cond, fields={'timestamp': 1}).get('timestamp')
+		timestamp = self.mongo_cli.get_one(table=FLAGS.block_info, cond=cond, fields={'timestamp': True}).get('timestamp')
 		return timestamp
 
 	def _get_tx_timestamp(self, tx_id):
-		block_hash = self.mongo_cli.get_one(table=FLAGS.transaction_info, cond={'id': tx_id}, fields={'block_hash': 1})\
+		block_hash = self.mongo_cli.get_one(table=FLAGS.transaction_info, cond={'id': tx_id}, fields={'block_hash': True})\
 			.get('block_hash')
 		return self._get_block_timestamp(block_hash)
