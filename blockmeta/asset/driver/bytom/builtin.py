@@ -39,7 +39,7 @@ class BuiltinDriver:
 		return result
 
 	def _show_asset_base_info(self, asset_object):
-		fields = ['amount', 'asset_definition', 'code', 'issue_by', 'retire']
+		fields = ['asset_id', 'amount', 'asset_definition', 'code', 'issue_by', 'retire']
 		result = {field: asset_object.get(field) for field in fields}
 		result['issue_timestamp'] = self._get_tx_timestamp(asset_object.get('issue_by'))
 		result['update_timestamp'] = self._get_block_timestamp(asset_object.get('block_hash'))

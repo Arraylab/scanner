@@ -1,8 +1,12 @@
-http://127.0.0.1:5000/api/asset/2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6bed40023459d4214
+# Asset Api
+## Asset Info
+### show relevant transactions
+http://127.0.0.1:5000/api/asset/2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6bed40023459d4214?tag='txs'
 ```
 {
     "amount": 10000000000,
     "asset_definition": {},
+    "asset_id": "2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6bed40023459d4214",
     "code": [
         "TXSIGHASH",
         "DATA_32 65a398eff9bc3fdfb920be7e66b1941ccc9df08ebda2e9fec2136124be4f28ed",
@@ -10,8 +14,97 @@ http://127.0.0.1:5000/api/asset/2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6
         "1 01",
         "CHECKMULTISIG"
     ],
-    "holder_num": 2,
+    "holder_num": 3,
     "info": [
+        {
+            "block_hash": "c1cee17e514b2ac0fd1e81629fdb341c5b17dc431860bed8eb1dd3f952614d68",
+            "block_height": 1696,
+            "id": "b908148d3cbeb1bbf31728866ea7d20e2d9a40c2533e3229b1e9e8548aa52693",
+            "inputs": [
+                {
+                    "address": "sm1qpat0qv68yk6vtlppm0377rxxjcmj4x2jhwsnxr",
+                    "amount": 41250000000,
+                    "asset_definition": {},
+                    "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                    "control_program": "00140f56f0334725b4c5fc21dbe3ef0cc696372a9952",
+                    "spent_output_id": "00766d2a9911956b3b4989f045fac66b884a5cc1de35ebbd652efbf41791b2be",
+                    "type": "spend"
+                },
+                {
+                    "address": "sm1qeckclscyjmld9wrmqkhdwjmtx3zufk8jfun99q",
+                    "amount": 3000000000,
+                    "asset_definition": {},
+                    "asset_id": "2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6bed40023459d4214",
+                    "control_program": "0014ce2d8fc30496fed2b87b05aed74b6b3445c4d8f2",
+                    "spent_output_id": "31dbaac468521fdc7747da534098cc685acba1dd16ea1dd902fd36dbb0a67699",
+                    "type": "spend"
+                }
+            ],
+            "outputs": [
+                {
+                    "address": "sm1qm3ulf032p89hawmjl7gcc2an77gztl2vhhuku6",
+                    "amount": 41249100000,
+                    "asset_definition": {},
+                    "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                    "code": [
+                        "DUP",
+                        "HASH160",
+                        "DATA_20 dc79f4be2a09cb7ebb72ff918c2bb3f79025fd4c",
+                        "EQUALVERIFY",
+                        "TXSIGHASH",
+                        "SWAP",
+                        "CHECKSIG"
+                    ],
+                    "control_program": "0014dc79f4be2a09cb7ebb72ff918c2bb3f79025fd4c",
+                    "id": "659bddd0d1ac2b4a637a9ae743f715f5dccb01ff8ab03e34d9d11baa828d4535",
+                    "position": 0,
+                    "type": "control"
+                },
+                {
+                    "address": "sm1qfadew3ksk9atzkezfcvxvxj6zvsy5degf33lzh",
+                    "amount": 2800000000,
+                    "asset_definition": {},
+                    "asset_id": "2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6bed40023459d4214",
+                    "code": [
+                        "DUP",
+                        "HASH160",
+                        "DATA_20 4f5b9746d0b17ab15b224e18661a5a13204a3728",
+                        "EQUALVERIFY",
+                        "TXSIGHASH",
+                        "SWAP",
+                        "CHECKSIG"
+                    ],
+                    "control_program": "00144f5b9746d0b17ab15b224e18661a5a13204a3728",
+                    "id": "9578daf145a58fd544620d73d08a20055f75bc3faad07588ef1bc3033b2f790b",
+                    "position": 1,
+                    "type": "control"
+                },
+                {
+                    "address": "sm1qhd49u5uxa8w37p3jyd96dfttfcp538ydjezk5z",
+                    "amount": 200000000,
+                    "asset_definition": {},
+                    "asset_id": "2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6bed40023459d4214",
+                    "code": [
+                        "DUP",
+                        "HASH160",
+                        "DATA_20 bb6a5e5386e9dd1f0632234ba6a56b4e03489c8d",
+                        "EQUALVERIFY",
+                        "TXSIGHASH",
+                        "SWAP",
+                        "CHECKSIG"
+                    ],
+                    "control_program": "0014bb6a5e5386e9dd1f0632234ba6a56b4e03489c8d",
+                    "id": "f56b5b0a6a16489ed8bfda7726b4265cb2300bbf0f256d9af93f97b9684f4f85",
+                    "position": 2,
+                    "type": "control"
+                }
+            ],
+            "size": 594,
+            "status_fail": false,
+            "time_range": 0,
+            "timestamp": 1527150538,
+            "version": 1
+        },
         {
             "block_hash": "a76dc57b0094e5bd7470b1011e84d3fbae937041f549e8c043b666a4f538e9eb",
             "block_height": 1459,
@@ -232,7 +325,92 @@ http://127.0.0.1:5000/api/asset/2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6
     "page": 1,
     "pages": 1,
     "retire": 2000000000,
-    "tx_num": 2,
-    "update_timestamp": 1527144365
+    "tx_num": 3,
+    "update_timestamp": 1527150538
+}
+```
+### show holders
+```
+{
+    "amount": 10000000000,
+    "asset_definition": {},
+    "asset_id": "2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6bed40023459d4214",
+    "code": [
+        "TXSIGHASH",
+        "DATA_32 65a398eff9bc3fdfb920be7e66b1941ccc9df08ebda2e9fec2136124be4f28ed",
+        "1 01",
+        "1 01",
+        "CHECKMULTISIG"
+    ],
+    "holder_num": 3,
+    "info": [
+        {
+            "address": "sm1q7k66mj4a595t50esgvfx7xjznrc64qs9fz4clx",
+            "balance": 5000000000
+        },
+        {
+            "address": "sm1qfadew3ksk9atzkezfcvxvxj6zvsy5degf33lzh",
+            "balance": 2800000000
+        },
+        {
+            "address": "sm1qhd49u5uxa8w37p3jyd96dfttfcp538ydjezk5z",
+            "balance": 200000000
+        }
+    ],
+    "issue_by": "4f1f06175df9aad2a9e2403f376c6a509588a56b0ee995190163640437c7cf0e",
+    "issue_timestamp": 1527144206,
+    "page": 1,
+    "pages": 1,
+    "retire": 2000000000,
+    "tx_num": 3,
+    "update_timestamp": 1527150538
+}
+```
+
+## Asset List
+http://127.0.0.1:5000/api/assets?page=1
+```
+{
+    "asset_num": 2,
+    "assets": [
+        {
+            "amount": 10000000000,
+            "asset_definition": {},
+            "asset_id": "2bd71210029ae842f6a4ac905e73e69462572bbaecdb14e6bed40023459d4214",
+            "code": [
+                "TXSIGHASH",
+                "DATA_32 65a398eff9bc3fdfb920be7e66b1941ccc9df08ebda2e9fec2136124be4f28ed",
+                "1 01",
+                "1 01",
+                "CHECKMULTISIG"
+            ],
+            "holder_num": 3,
+            "issue_by": "4f1f06175df9aad2a9e2403f376c6a509588a56b0ee995190163640437c7cf0e",
+            "issue_timestamp": 1527144206,
+            "retire": 2000000000,
+            "tx_num": 3,
+            "update_timestamp": 1527150538
+        },
+        {
+            "amount": 2000000000,
+            "asset_definition": {},
+            "asset_id": "95cd0451f6fc7cedba963a1318e075e7a9cc3544c1731b10631bd2cd3149780a",
+            "code": [
+                "TXSIGHASH",
+                "DATA_32 b6050480ccfbcfb363f89697da1d054e30ba102c1b1834b2f746e8ed9a8d1a88",
+                "1 01",
+                "1 01",
+                "CHECKMULTISIG"
+            ],
+            "holder_num": 1,
+            "issue_by": "fc0685846174b6d9d9997bdacd8cf7d53c43a6d827e707c489ad4593bad3609b",
+            "issue_timestamp": 1527150353,
+            "retire": 0,
+            "tx_num": 1,
+            "update_timestamp": 1527150353
+        }
+    ],
+    "page": 1,
+    "pages": 1
 }
 ```
