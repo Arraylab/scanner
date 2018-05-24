@@ -31,14 +31,12 @@ class BuiltinDriver:
 		result['update_timestamp'] = self._get_block_timestamp(asset_object.get('block_hash'))
 		result['tx_num'] = len(asset_object.get('txs'))
 		result['holder_num'] = len(asset_object.get('balances'))
-		if tag not in ['txs', 'balances']:
-			tag = 'txs'
+		tag = 'txs' if tag not in ['txs', 'balances'] else tag
 		page_max = len(asset_object.get(tag)) / 10 + 1
 		page = min(page_max, page)
 		result['info'] = self._get_txs_info(asset_object.get('txs'), page) if tag == 'txs' \
 			else self._get_balances_info(asset_object.get('balances'), page)
-
-		result['no_page'] = page
+		result['page'] = page
 		result['pages'] = page_max
 		return result
 
@@ -46,7 +44,8 @@ class BuiltinDriver:
 		page = min(len(tx_ids) / 10 + 1, page)
 		start = (page-1) * 10
 		end = page * 10
-		tx_ids = tx_ids.reverse()[start:end]
+		tx_ids.reverse()
+		tx_ids = tx_ids[start:end]
 		txs = [self.mongo_cli.get_one(flags.FLAGS.transaction_info, cond={'id': tx_id}) for tx_id in tx_ids]
 		info = [self.normalize_tx(tx) for tx in txs]
 		return info
