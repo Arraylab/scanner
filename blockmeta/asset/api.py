@@ -10,7 +10,7 @@ class AssetAPI(Resource):
 	def __init__(self):
 		self.manager = AssetManager()
 		self.parser = reqparse.RequestParser()
-		self.parser.add_argument('p', type=int, help='page number of txs/balances')
+		self.parser.add_argument('page', type=int, help='page number of txs/balances')
 		self.parser.add_argument('tag', type=str, help='txs/balaces')
 
 	def get(self, asset_id):

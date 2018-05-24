@@ -6,6 +6,7 @@ import blockmeta.block.api
 import blockmeta.search.api
 import blockmeta.tx.api
 import blockmeta.odin.api
+import blockmeta.asset.api
 
 # modules = [(handle, urls, args)]
 MODULES = [
@@ -19,7 +20,9 @@ MODULES = [
 
     (blockmeta.search.api.SearchAPI, ('/api/search',), {'endpoint': 'search'}),
 
-    (blockmeta.odin.api.OdinAPI, ('/api/odin',), {'endpoint': 'odin'})
+    (blockmeta.odin.api.OdinAPI, ('/api/odin',), {'endpoint': 'odin'}),
+
+    (blockmeta.asset.api.AssetAPI, ('/api/asset/<string:asset_id>',), {'endpoint': 'asset'})
 ]
 
 
