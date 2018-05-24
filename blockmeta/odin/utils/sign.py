@@ -5,7 +5,7 @@ import base64
 import json
 
 key_dir = r'./blockmeta/key/keystore.json'
-
+sign_algorithm = 'MD5withRSA'
 
 def rsa_sign(data):
     with open(key_dir, 'r') as key_file:

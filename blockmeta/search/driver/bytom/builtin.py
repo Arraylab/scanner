@@ -23,6 +23,7 @@ class BuiltinDriver:
         self.mongo_cli.use_db(FLAGS.mongo_bytom)
 
     def search(self, info):
+        info_copy = info[:]
         info.strip().lower()
         try:
             if HEIGHT_RE.match(info):
@@ -39,6 +40,12 @@ class BuiltinDriver:
                 transaction = self.search_tx_by_hash(hash_value)
                 if transaction:
                     return {'type': 'tx', 'value': hash_value}
+                asset = self.search_asset_by_id(hash_value)
+                if asset:
+                    return {'type': 'asset', 'value': hash_value}
+            asset_id = self.search_asset_by_definition(info_copy)
+            if asset_id:
+                return {'type': 'asset', 'value': asset_id}
 
             return None
 
@@ -46,10 +53,22 @@ class BuiltinDriver:
             self.logger.error("Search.bytom.BuiltinDriver.search Error: %s" % str(e))
 
     def search_block_by_height(self, height):
-        return self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: height})
+        return self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: height},
+                                      fields={'hash': True, '_id': False})
 
     def search_block_by_hash(self, block_hash):
-        return self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_id: block_hash})
+        return self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_id: block_hash},
+                                      fields={'hash': True, '_id': False})
 
     def search_tx_by_hash(self, tx_hash):
-        return self.mongo_cli.get_one(table=FLAGS.transaction_info, cond={FLAGS.tx_id: tx_hash})
+        return self.mongo_cli.get_one(table=FLAGS.transaction_info, cond={FLAGS.tx_id: tx_hash},
+                                      fields={'id': True, '_id': False})
+
+    def search_asset_by_id(self, asset_id):
+        return self.mongo_cli.get_one(table=FLAGS.asset_info, cond={FLAGS.asset_id: asset_id},
+                                      fields={'asset_id': True, '_id': False})
+
+    def search_asset_by_definition(self, definition):
+        return self.mongo_cli.get_many(table=FLAGS.asset_info, cond={'$or': [{'asset_definition.name': definition},
+                                                                             {'asset_definition.symbol': definition}]},
+                                       items={'asset_id': True, '_id': False})

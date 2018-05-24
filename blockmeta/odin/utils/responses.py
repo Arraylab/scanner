@@ -1,6 +1,6 @@
 import json
 import time
-from sign import rsa_sign
+from sign import rsa_sign, key_dir, sign_algorithm
 
 
 def wrap_data(data):
@@ -8,25 +8,28 @@ def wrap_data(data):
     response = {
         'ver': 1,
         'data': j_data,
-        'sign': 'MD5withRSA:' + rsa_sign(j_data),
+        'sign': sign_algorithm + ':' + rsa_sign(j_data),
     }
-
     return response
 
 
-def parse_next_response(uri):
+def parse_next_response(uri, next_url='http://127.0.0.1:5000/api/odin'):
+    with open(key_dir, 'r') as key_file:
+        key_dict = json.load(key_file)
+    pubkey = key_dict.get('RSAPublicKey')
+
     r_content = {
         'uri': uri,
         'ver': 1,
         'auth': '0',
         'titile': 'demo',
         'vd_set': {
-            'algo': 'MD5withRSA',
-            'pubkey': 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQChNn3wKRtPmxaKq2dKsfMn6sO6AKxvtxZgNdh7\r\nHBWq2z0AJusZHFx2tO2X3jpaYWSIwDrH6AdU2LMMc7IRaUgvLRgT6kPK5OLEzvS+Bmh+1kh7Fz4z\r\nk96UX7UDt55vyK18dJxad+tYwzcN4/Vjudy9RQy6nVX+tRtqRMVNKE254wIDAQAB\r\n',
+            'algo': sign_algorithm,
+            'pubkey': pubkey
         },
         'ap_set': {
             '0': {
-                'url': 'http://127.0.0.1:5000/api/odin'
+                'url': next_url
             }
         }
     }
@@ -58,7 +61,7 @@ def hello_world_response(uri):
         "status_detail": "Ok",
         "metainfo": {
            "content_type": "text/html",
-           "content_length": 51,
+           "content_length": len(content),
          },
 
         "content": content
