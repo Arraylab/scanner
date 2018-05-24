@@ -2,6 +2,7 @@
 
 from collector.db.mongodriver import MongodbClient
 from tools import exception, flags
+import sys
 
 FLAGS = flags.FLAGS
 
@@ -43,6 +44,20 @@ class DbProxy(object):
             raise exception.DBError(e)
         return None if state is None else state
 
+    def get_chain_stats_list(self):
+        try:
+            stats = self.mongo_cli.get_many(table=FLAGS.chain_status)
+        except Exception as e:
+            raise exception.DBError(e)
+        return None if stats is None else stats
+
+    def get_node_stats_list(self):
+        try:
+            stats = self.mongo_cli.get_many(table=FLAGS.node_status)
+        except Exception as e:
+            raise exception.DBError(e)
+        return None if stats is None else stats
+
     def save_chain(self, status):
         try:
             self.mongo_cli.insert(flags.FLAGS.node_status, status)
@@ -60,3 +75,25 @@ class DbProxy(object):
             self.mongo_cli.insert(flags.FLAGS.node_status, status)
         except Exception as e:
             raise exception.DBError(e)
+
+    def request_node_status(self):
+        try:
+            stats = self.mongo_cli.get_many(
+                table=FLAGS.node_status,
+                n=1,
+                sort_key=FLAGS.timestamp,
+                ascend=False
+            )
+        except Exception as e:
+            raise exception.DBError(e)
+        return stats
+
+
+if __name__ == '__main__':
+    FLAGS(sys.argv)
+    db = DbProxy()
+    print db.request_node_status()
+    print
+    print db.get_chain_stats_list()
+    print
+    print db.get_node_stats_list()

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from collector.agent.fetcher import Fetcher
 from proxy import DbProxy
 from tools import flags
 import gevent
@@ -10,13 +11,14 @@ import time
 FLAGS = flags.FLAGS
 DEFAULT_ASSET_ID = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 CONFIRM_NUM = 6
-mutex = threading.Lock
+mutex = threading.Lock()
 
 
 class ChainStats(object):
 
     def __init__(self):
         self.proxy = DbProxy()
+        self.fetcher = Fetcher()
 
     # 上一个区块的出块间隔
     def get_last_block_interval(self, height):
@@ -235,11 +237,22 @@ class ChainStats(object):
         stats_list.append(s)
         mutex.release()
 
+    def check_syn_height(self):
+        chain_height = self.fetcher.request_chain_height()
+        db_height = self.proxy.get_recent_height()
+        print 'chain height: ', chain_height
+        print 'db_height: ', db_height
+        if db_height < chain_height:
+            return False
+        return True
 
     # 历史每天的chain状态
     def chain_status_history(self):
+        while not self.check_syn_height():
+            time.sleep(10)
         recent_height = self.proxy.get_recent_height()
         current_time = self.proxy.get_block_by_height(recent_height)['timestamp']
+
         print current_time
         genesis_time = self.proxy.get_block_by_height(0)['timestamp']
         days = (current_time - genesis_time) / 86400
@@ -257,13 +270,18 @@ class ChainStats(object):
             height_point.append(i)
             point = timestamps[i]
 
+        print 'height point: ', height_point
         result = []
         jobs = [gevent.spawn(self._compute, result, height_point[i], height_point[i+1]) for i in range(len(height_point)-1)]
         gevent.joinall(jobs)
+        print 'chain stats: ', result
         return result
 
     def genesis_status(self):
         block = self.proxy.get_block_by_height(0)
+        while block is None:
+            time.sleep(2)
+            block = self.proxy.get_block_by_height(0)
         tx_num = len(block['transactions'])
 
         initial_status = {
@@ -285,7 +303,9 @@ class ChainStats(object):
     def load(self):
         if self.proxy.get_status() is None:
             status_genesis = self.genesis_status()
+            print 'status_genesis', status_genesis
             status_history = self.chain_status_history()
+            print 'status_history', status_history
             status_history.append(status_genesis)
             self.proxy.save_chain_patch(status_history)
         else:

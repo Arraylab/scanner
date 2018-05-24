@@ -28,7 +28,7 @@ class StatusService(object):
         start = time.time()
         self.chain_stats.load()
         end = time.time()
-        print "***:", end-start
+        print "time lapse:", end-start
         self.node_stats.save()
         print "haha, success!......"
         time.sleep(POLLTIMER)

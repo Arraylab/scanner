@@ -2,12 +2,13 @@
 
 from blockmeta.db.mongo import MongodbClient
 from tools import flags, exception
+import sys
 
 FLAGS = flags.FLAGS
 
 
 class BuiltinDriver:
-    def __init__(self, base):
+    def __init__(self):
         self.mongo_cli = MongodbClient(
             host=FLAGS.mongo_bytom_host,
             port=FLAGS.mongo_bytom_port)
@@ -39,6 +40,7 @@ class BuiltinDriver:
 
 
 if __name__ == '__main__':
+    FLAGS(sys.argv)
     b = BuiltinDriver()
     print b.request_chain_status()
     print b.request_node_status()
