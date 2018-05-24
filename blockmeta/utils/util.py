@@ -61,3 +61,4 @@ def wrap_error_response(message='', data='', status='failure', code='500'):
 def valid_addr(addr):
     addr.strip().lower()
     return (ADDRESS_42_RE.match(addr) or ADDRESS_62_RE.match(addr)) is not None
+

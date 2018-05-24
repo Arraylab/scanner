@@ -46,8 +46,8 @@ class MongodbClient:
         res = self.mc[table].find(args).sort(order, -1).limit(n)
         return res if res else None
 
-    def get_one(self, table, cond):
-        res = self.mc[table].find_one(cond)
+    def get_one(self, table, cond, fields):
+        res = self.mc[table].find_one(cond, fields)
         return res if res else None
 
     def get_many(self, table, cond={}, items=None, n=0, sort_key=None, ascend=True, skip=0):

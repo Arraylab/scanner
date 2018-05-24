@@ -13,12 +13,13 @@ class AddressAPI(Resource):
     def __init__(self):
         self.manager = AddressManager()
         self.parser = reqparse.RequestParser()
-        self.parser.add_argument('p', type=int, help='transaction page number')
+        self.parser.add_argument('page', type=int, help='transaction page number')
 
     def get(self, address):
-        address.lower()
+        address.strip().lower()
         args = self.parser.parse_args()
         page = args.get('page')
+
         if not isinstance(page, int) or page <= 0:
             page = 1
 
