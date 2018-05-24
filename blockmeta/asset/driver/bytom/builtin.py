@@ -25,8 +25,9 @@ class BuiltinDriver:
 	def _show_asset(self, asset_object, page, tag='txs'):
 		if asset_object is None:
 			return {}
+		print tag
 		fields = ['amount', 'asset_definition', 'code', 'issue_by', 'retire']
-		result = {field: asset_object.get('field') for field in fields}
+		result = {field: asset_object.get(field) for field in fields}
 		result['issue_timestamp'] = self._get_tx_timestamp(asset_object.get('issue_by'))
 		result['update_timestamp'] = self._get_block_timestamp(asset_object.get('block_hash'))
 		result['tx_num'] = len(asset_object.get('txs'))
