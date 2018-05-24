@@ -3,7 +3,6 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import MD5
 import base64
 
-
 def rsa_sign(data):
     private_key_file = open('./blockmeta/key/priv_key.pem', 'r')
     # private_key_file = open('priv_key.pem', 'r')
