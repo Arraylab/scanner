@@ -1,4 +1,3 @@
-
 from collector.log import Logger
 from collector.db.mongodriver import MongodbClient
 from collector.agent.fetcher import Fetcher
