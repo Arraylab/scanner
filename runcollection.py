@@ -15,7 +15,7 @@ def status_service():
 
 if __name__ == "__main__":
     FLAGS(sys.argv)
-    g = gevent.spawn(status_service)
+    # g = gevent.spawn(status_service)
     my_agent = agent.DataAgent()
     my_agent.sync_forever()
 
