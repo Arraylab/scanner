@@ -263,7 +263,7 @@ They support both GET/POST requests and a rate limit of 5 requests/sec.
 ```
 {
     "asset_num": 0,
-    "assets": [--Array of Transactions--],
+    "assets": [--Array of assets--],
     "page": 1,
     "pages": 1
 }
