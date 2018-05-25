@@ -11,3 +11,4 @@ blockmeta/utils/*.pem
 blockmeta/utils/*.json
 blockmeta/key/
 blockmeta/test/
+collector/logs
