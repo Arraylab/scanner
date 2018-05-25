@@ -7,7 +7,6 @@ import time
 
 FLAGS = flags.FLAGS
 DEFAULT_ASSET_ID = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
-CONFIRM_NUM = 6
 mutex = threading.Lock()
 
 
@@ -133,7 +132,7 @@ class ChainStats(object):
     # 最近24小时内出块总数、平均时间、中位数、最大、最小; 交易总数、平均区块费用、平均交易费用、平均hash rate
     def get_chain_status(self):
         ticks = int(time.time())
-        recent_height = self.proxy.get_recent_height() - CONFIRM_NUM
+        recent_height = self.proxy.get_recent_height()
         block = self.proxy.get_block_by_height(recent_height)
         recent_timestamp = block['timestamp']
         print 'recent_timestamp:', recent_timestamp
@@ -158,10 +157,7 @@ class ChainStats(object):
         timestamps = [t['timestamp'] for t in tps]
         print 'timestamps:', timestamps
 
-        for i in range(1, CONFIRM_NUM + 1):
-            t = self.proxy.get_block_by_height(close_height - i)['timestamp']
-            timestamps.append(t)
-        total_block_num = recent_height - close_height + CONFIRM_NUM
+        total_block_num = recent_height - close_height
         timestamps.sort()
         print 'timestamps-2:', timestamps
         average_block_time = 86400 / total_block_num

@@ -4,7 +4,6 @@ from collector.agent.fetcher import Fetcher
 from proxy import DbProxy
 from tools import flags
 import gevent
-import sys
 import threading
 import time
 
@@ -269,6 +268,7 @@ class ChainStats(object):
 
         tps = self.proxy.get_timestamps_in_range(0, recent_height+1)
         timestamps = [t['timestamp'] for t in tps]
+        timestamps.sort()
         print 'timestamps', tps, timestamps
 
         height_point = []
