@@ -18,8 +18,26 @@ class AssetAPI(Resource):
 		args = self.parser.parse_args()
 		page = args.get('page')
 		tag = args.get('tag')
-		if not isinstance(page, int) or page <= 0:
-			page = 1
-		if not isinstance(tag, str) or tag not in ['txs', 'balances']:
-			tag = 'txs'
-		return self.manager.handle_asset(asset_id, page, tag)
+		page = 1 if page is None or not isinstance(page, int) or page <= 0 else page
+		tag = 'txs' if tag is None or not isinstance(tag, str) or tag not in ['txs', 'balances'] else tag
+		result = self.manager.handle_asset(asset_id, page, tag)
+		if len(result) == 0:
+			abort(404, message="asset not found")
+		return result
+
+
+class AssetListAPI(Resource):
+	def __init__(self):
+		self.manager = AssetManager()
+		self.parser = reqparse.RequestParser()
+		self.parser.add_argument('page', type=int, help='page number')
+
+	def get(self):
+		args = self.parser.parse_args()
+		page = args.get('page')
+		page = 1 if page is None or not isinstance(page, int) or page <= 0 else page
+		result = self.manager.list_assets(page)
+		return result
+
+
+

@@ -17,8 +17,8 @@ class BuiltinDriver:
 
     def request(self, attribute, content):
         if attribute == 'asset':
-            asset_info = self.mongo_cli.get_one(table=FLAGS.asset_info, cond={'asset': content})
-            return self._show_asset(asset_info)
+            asset_info = self.mongo_cli.get_one(table=FLAGS.asset_info, cond={'asset_id': content})
+            return self._show_asset(asset_info) if asset_info is not None else {}
         return None
 
     @staticmethod

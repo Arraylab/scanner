@@ -15,10 +15,9 @@ class SearchAPI(Resource):
         self.parser.add_argument('q', type=str, help='query info', ignore=False)
         super(SearchAPI, self).__init__()
 
-    def post(self):
+    def get(self):
         args = self.parser.parse_args()
         info = args.get('q')
-
         found = self.manager.search(info)
         if not found:
             return util.wrap_error_response(status='failure', data=found, code='404')

@@ -32,6 +32,9 @@ class MongodbClient:
     def insert(self, table, value):
         self.mc[table].insert(value)
 
+    def get_size(self, table):
+        return self.mc[table].find().count()
+
     def get_all(self, table, cond={}, items=None, n=0, sort_key=None, ascend=True, skip=0):
         collection = self.mc[table].find(cond, items) if items else self.mc[table].find(cond)
         if n > 0:

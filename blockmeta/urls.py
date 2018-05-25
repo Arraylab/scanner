@@ -27,7 +27,8 @@ MODULES = [
 
     (blockmeta.odin.api.OdinAPI, ('/api/odin',), {'endpoint': 'odin'}),
 
-    (blockmeta.asset.api.AssetAPI, ('/api/asset/<string:asset_id>',), {'endpoint': 'asset'})
+    (blockmeta.asset.api.AssetAPI, ('/api/asset/<string:asset_id>',), {'endpoint': 'asset'}),
+    (blockmeta.asset.api.AssetListAPI, ('/api/assets',), {'endpoint': 'assets'})
 ]
 
 
