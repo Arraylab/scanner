@@ -5,7 +5,7 @@ They support both GET/POST requests and a rate limit of 5 requests/sec.
 
 
 ## Address
-
+### Single Address
 - http://blockmeta.com/api/address/bm1qcxg0w7c70tdd46t7dxn204mkyeyudcz063s49e
 - Optional limit parameter to show n transactions e.g.&limit=50(Default:50, Max:50)(**TODO**)
 
@@ -17,6 +17,22 @@ They support both GET/POST requests and a rate limit of 5 requests/sec.
     "txs": [--Array of Transactions--],
     "asset_balance": {}
     "sent": 0
+}
+```
+### Address List
+
+- http://blockmeta.com/api/addresses?no_page=1
+
+```
+{
+    "code": "200",
+    "data": {
+        "addresses": [--Array of Addresses--],
+        "no_page": 1,
+        "pages": 2495
+    },
+    "message": "",
+    "status": "success"
 }
 ```
 
