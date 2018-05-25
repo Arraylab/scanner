@@ -35,7 +35,7 @@ class OdinAPI(Resource):
                 return responses.parse_next_response(uri)
             elif len(argument_list) == 3:
                 found = self.manager.handle_odin(argument_list[1], argument_list[2])
-                if not found:
+                if found:
                     return responses.wrap_ordin_response(200, uri, found)
                 else:
                     return responses.wrap_ordin_response(404, uri)
