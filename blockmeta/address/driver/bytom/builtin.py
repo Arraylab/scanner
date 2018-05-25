@@ -16,7 +16,6 @@ class BuiltinDriver:
         self.mongo_cli.use_db(FLAGS.mongo_bytom)
 
     def request_address_info(self, addr, page=1):
-        addr.strip().lower()
         addr_object = self.mongo_cli.get_one(table=FLAGS.address_info, cond={FLAGS.address: addr})
         addr_info = self._show_addr(addr_object, page)
         return addr_info
@@ -28,10 +27,11 @@ class BuiltinDriver:
                 'sent': 0,
                 'recv': 0,
                 'tx_num': 0,
-                'txs': []
+                'txs': [],
+                'asset_balance': {}
             }
 
-        fields = ['balance', 'sent', 'recv']
+        fields = ['balance', 'sent', 'recv', 'asset_balances']
         result = {}
         for field in fields:
             result[field] = addr[field]

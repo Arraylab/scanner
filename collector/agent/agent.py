@@ -1,6 +1,7 @@
 # coding=utf-8
 import time
-from log import Logger
+
+from collector.log import Logger
 from collector.agent.db_proxy import DbProxy
 from collector.agent.fetcher import Fetcher
 from tools import flags
@@ -45,21 +46,18 @@ class DataAgent:
                 raise Exception('collector.agent: sync save block error: %s', e)
 
     def roll_back(self):
+        self.proxy.remove_future_block()
         while self.height > 0:
-            try:
-                db_block = self.proxy.get_block_by_height(self.height)
+            db_block = self.proxy.get_block_by_height(self.height)
+            if db_block is not None:
+
                 node_block = self.fetcher.request_block(self.height)
                 if db_block['hash'] == node_block['hash']:
                     return
-
-                self.logger.info('rolling back block: %s | %s' % (str(db_block['height']), str(db_block['hash'])))
                 self.proxy.remove_highest_block(db_block)
-                self.proxy.set_height(self.height - 1)
-                self.height -= 1
-                self.logger.info('rollback block: %s | %s' % (str(db_block['height']), str(db_block['hash'])))
-            except Exception as e:
-                self.logger.error('collector.agent: roll_back error: %s\nblock:\n%s\n' % (str(e), str(node_block)))
-                raise Exception('collector.agent: roll_back error: %s', e)
+
+            self.proxy.set_height(self.height - 1)
+            self.height -= 1
 
     def sync_forever(self):
         while True:
