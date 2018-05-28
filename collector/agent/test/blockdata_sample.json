@@ -1,0 +1,168 @@
+// block sample:
+{
+    "status": "success",
+    "data": {
+        "hash": "ec45b8014a3e264c30aafc51b05f53efdf4e0ed192e01d85589ef88eb57db7c3",
+        "size": 4648,
+        "version": 1,
+        "height": 9955,
+        "previous_block_hash": "9e2b602b484146d89ca4349e9c647312bfbea269a9f52ce829baf37bcf0cb2c8",
+        "timestamp": 1524126955,
+        "nonce": 1888711870733,
+        "bits": 2089670227112911600,
+        "difficulty": "5348511812016587052887584421662395819684775037466344049071325102211072",
+        "transaction_merkle_root": "02edd636015a45fbf7d6d98144001ef775305042592b1ec53f06db0fcfb33ec8",
+        "transaction_status_hash": "6978a65b4ee5b6f4914fe5c05000459a803ecf59132604e5d334d64249c5e50a",
+        "transactions": [
+            {
+                "id": "152714c01f941a5f78fdae67ac7e5470b428f229149544b5133cdd9456831469",
+                "version": 1,
+                "size": 78,
+                "time_range": 0,
+                "inputs": [
+                    {
+                        "type": "coinbase",
+                        "asset_id": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "asset_definition": { },
+                        "amount": 0,
+                        "arbitrary": "e29ba3"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "control",
+                        "id": "400cfcfd02cb8d64fca23c905ee76855e34883979c762b2e55bba3cd4002b645",
+                        "position": 0,
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 42250000000,
+                        "control_program": "0014b2a40d1a9a67de553f34475a7759e1e4f31a2ad1",
+                        "address": "bm1qk2jq6x56vl0920e5gad8wk0pune352k3c59cp7"
+                    }
+                ],
+                "status_fail": false
+            },
+            {
+                "id": "61a415aa7b531922f902f0fec670f36acb35e81b8f0897a5c7f0455daa566f56",
+                "version": 1,
+                "size": 2124,
+                "time_range": 0,
+                "inputs": [
+                    {
+                        "type": "spend",
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 41250000000,
+                        "control_program": "0014b2a40d1a9a67de553f34475a7759e1e4f31a2ad1",
+                        "address": "bm1qk2jq6x56vl0920e5gad8wk0pune352k3c59cp7",
+                        "spent_output_id": "00f0d7725604d48cf36d93df91dd9cfae75feef2baa68d4cf7feaac392e166df"
+                    },
+                    {
+                        "type": "spend",
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 41250000000,
+                        "control_program": "0014b2a40d1a9a67de553f34475a7759e1e4f31a2ad1",
+                        "address": "bm1qk2jq6x56vl0920e5gad8wk0pune352k3c59cp7",
+                        "spent_output_id": "1b9c942f93537805ce29ae3257b6f06660d0e200b0511b143458072cbd32489c"
+                    },
+                    {
+                        "type": "spend",
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 41250000000,
+                        "control_program": "0014b2a40d1a9a67de553f34475a7759e1e4f31a2ad1",
+                        "address": "bm1qk2jq6x56vl0920e5gad8wk0pune352k3c59cp7",
+                        "spent_output_id": "22af4ef1c8073ff1680bf06aad20820b3bb6f7251133bbffb0a6e8840e896afc"
+                    },
+                    {
+                        "type": "spend",
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 41250000000,
+                        "control_program": "0014b2a40d1a9a67de553f34475a7759e1e4f31a2ad1",
+                        "address": "bm1qk2jq6x56vl0920e5gad8wk0pune352k3c59cp7",
+                        "spent_output_id": "24fda27ba4a3879e6000cab3fe41ccbee4a5b9f95dd8c61342ca84889ef0b305"
+                    },
+                    {
+                        "type": "spend",
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 41250000000,
+                        "control_program": "0014b2a40d1a9a67de553f34475a7759e1e4f31a2ad1",
+                        "address": "bm1qk2jq6x56vl0920e5gad8wk0pune352k3c59cp7",
+                        "spent_output_id": "2cb807e09bb17779bc58db2f6188ac64c19fceed3dcd39a0c916f69880c2c9cc"
+                    },
+                    {
+                        "type": "spend",
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 41250000000,
+                        "control_program": "0014b2a40d1a9a67de553f34475a7759e1e4f31a2ad1",
+                        "address": "bm1qk2jq6x56vl0920e5gad8wk0pune352k3c59cp7",
+                        "spent_output_id": "308ac3a6b679af395f0f7bed32097fca8abf41fd738aace2cf4b426aa63f3126"
+                    },
+                    {
+                        "type": "spend",
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 41250000000,
+                        "control_program": "0014b2a40d1a9a67de553f34475a7759e1e4f31a2ad1",
+                        "address": "bm1qk2jq6x56vl0920e5gad8wk0pune352k3c59cp7",
+                        "spent_output_id": "33adcef8bda0d01c7362de34499d90e9bb60889ee2e65966613aa9179a443dcc"
+                    },
+                    {
+                        "type": "spend",
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 41250000000,
+                        "control_program": "0014b2a40d1a9a67de553f34475a7759e1e4f31a2ad1",
+                        "address": "bm1qk2jq6x56vl0920e5gad8wk0pune352k3c59cp7",
+                        "spent_output_id": "4213adebf38cfbe539c5c4ba9bd2740d5ae0ea27d44d63da2c14cc245718dd2b"
+                    },
+                    {
+                        "type": "spend",
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 41250000000,
+                        "control_program": "0014b2a40d1a9a67de553f34475a7759e1e4f31a2ad1",
+                        "address": "bm1qk2jq6x56vl0920e5gad8wk0pune352k3c59cp7",
+                        "spent_output_id": "42b5f4fa87e55b7c8fd100555639467ef647c237c0d6c2bd5dec0f22e8f4d71d"
+                    },
+                    {
+                        "type": "spend",
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 41250000000,
+                        "control_program": "0014b2a40d1a9a67de553f34475a7759e1e4f31a2ad1",
+                        "address": "bm1qk2jq6x56vl0920e5gad8wk0pune352k3c59cp7",
+                        "spent_output_id": "471820ba1a2c91a64e7786830ba4b1f4178fb414d090be834e0c1f66e247371e"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "type": "control",
+                        "id": "625a946279d691e6e752f0fc39d550f06fa710d8b5b8df55017ea628919eb20a",
+                        "position": 0,
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 11500000000,
+                        "control_program": "0014180042c19a9ed564bbbd6aa63a14f4d865d03e0a",
+                        "address": "bm1qrqqy9sv6nm2kfwaad2nr5985mpjaq0s2zk4hhp"
+                    },
+                    {
+                        "type": "control",
+                        "id": "21cf4c2991490b7ad699e2b9072fa3e9ce6feec9ad73f9b4608c3165e1552b1d",
+                        "position": 1,
+                        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+                        "asset_definition": { },
+                        "amount": 400000000000,
+                        "control_program": "0014931932ad063f54adaa14c300d3bc7745667a3c4d",
+                        "address": "bm1qjvvn9tgx8a22m2s5cvqd80rhg4n850zddx292s"
+                    }
+                ],
+                "status_fail": false
+            }
+        ]
+    }
+}

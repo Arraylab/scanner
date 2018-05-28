@@ -1,0 +1,62 @@
+//> db.address_info.find({'height': 23})
+
+{
+    "_id": ObjectId("5ae1800c8105be2d051f5e35"),
+    "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "tx_io_id": "10efbbb4fe8a6bdd70541c9f89186612c949f6e148e1268bbb698442183d8ee0",
+    "amount": NumberLong("41250000000"),
+    "hash": "bb40c103fda4985488bb65ee4cc76b0a005e89ef3f56b2afe73180eff6d47b16",
+    "address": "tm1qu539ugqzszgl084j60re6d9np8atdx0kfml0z4",
+    "is_tx_in": false,
+    "type": "control",
+    "id": "08191627e25605e5fe1ef2f0c9bc719522b93b15bb77bd047780b113abb7aea2",
+    "height": 23
+}
+
+//> db.transaction_info.find({'height': 23})
+
+{
+    "_id": ObjectId("5ae1800c8105be2d051f5e34"),
+    "inputs": [{
+        "asset_id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "asset_definition": {},
+        "amount": 0,
+        "type": "coinbase",
+        "arbitrary": "17"
+    }],
+    "hash": "bb40c103fda4985488bb65ee4cc76b0a005e89ef3f56b2afe73180eff6d47b16",
+    "outputs": [{
+        "asset_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "control_program": "0014e5225e20028091f79eb2d3c79d34b309fab699f6",
+        "asset_definition": {},
+        "amount": NumberLong("41250000000"),
+        "address": "tm1qu539ugqzszgl084j60re6d9np8atdx0kfml0z4",
+        "position": 0,
+        "type": "control",
+        "id": "10efbbb4fe8a6bdd70541c9f89186612c949f6e148e1268bbb698442183d8ee0"
+    }],
+    "status_fail": false,
+    "time_range": 0,
+    "version": 1,
+    "coinbase": true,
+    "height": 23,
+    "id": "08191627e25605e5fe1ef2f0c9bc719522b93b15bb77bd047780b113abb7aea2",
+    "size": 76
+}
+
+//> db.block_info.find({'height': 23})
+{
+    "_id": ObjectId("5ae1800c8105be2d051f5e33"),
+    "nonce": NumberLong("3234311701224"),
+    "hash": "bb40c103fda4985488bb65ee4cc76b0a005e89ef3f56b2afe73180eff6d47b16",
+    "transaction_status_hash": "c9c377e5192668bc0a367e4a4764f11e7c725ecced1d7b6a492974fab1b6d5bc",
+    "timestamp": 1524226982,
+    "transactions": ["08191627e25605e5fe1ef2f0c9bc719522b93b15bb77bd047780b113abb7aea2"],
+    "height": 23,
+    "difficulty": "4584416422934673733293287478092046801306900444367827930390842618937344",
+    "version": 1,
+    "previous_block_hash": "3dca0303a289e50460b4f0033ac10ea06f02f01dafce05cce0acd5fb98b0b0c8",
+    "transaction_merkle_root": "a9b3d6c3aedf027268d771cfdb8414f86f4a0afef27a24fb8fcee9061f3fbc82",
+    "bits": NumberLong("2089670227111054243"),
+    "size": 394
+}

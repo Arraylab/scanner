@@ -1,0 +1,15 @@
+.cache/
+.env
+.idea
+.pytest_cache
+.python-version
+
+*.pyc
+*.egg-info
+logs/
+
+blockmeta/utils/*.pem
+blockmeta/utils/*.json
+blockmeta/key/
+blockmeta/test/
+collector/logs
