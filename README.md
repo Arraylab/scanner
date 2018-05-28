@@ -28,11 +28,16 @@
 ## Running
 
 ### collect block data from bytomd
+
+```
 python runcollection.py
+```
 
 ### provide restful api
-python runrestful.py
 
+```
+python runrestful.py
+```
 
 
 ## Blockmeta Data API
