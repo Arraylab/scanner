@@ -199,7 +199,7 @@ They support both GET/POST requests and a rate limit of 5 requests/sec.
 
 ### Chain Stats
 
-- http://blockmeta.com/api/node-stats
+- http://blockmeta.com/api/chain-stats
 
 ```
 {
