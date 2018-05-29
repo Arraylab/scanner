@@ -1,11 +1,10 @@
 import json
-
 import requests
-
 from tools import flags
 
+requests.adapters.DEFAULT_RETRIES = 5
 
-# fetch info from bytomd
+
 class Fetcher:
     def __init__(self):
         self.url_base = flags.FLAGS.bytomd_rpc
