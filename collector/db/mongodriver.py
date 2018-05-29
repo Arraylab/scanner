@@ -31,6 +31,9 @@ class MongodbClient:
         res = self.mc[table].find_one(cond)
         return res if res else None
 
+    def add_index(self, table, keys, args=None):
+        self.mc[table].ensure_index(keys, args)
+
     def insert(self, table, value):
         self.mc[table].insert(value)
 
