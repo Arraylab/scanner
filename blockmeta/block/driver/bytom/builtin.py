@@ -23,7 +23,6 @@ class BuiltinDriver:
 
     def request_block_info(self, arg):
         try:
-            arg.strip().lower()
             hash_or_height = remove_0x(arg)
             is_hash = len(hash_or_height) == 64
             return self.get_block_by_hash(hash_or_height) if is_hash else self.get_block_by_height(hash_or_height)

@@ -15,7 +15,7 @@ class AssetAPI(Resource):
         self.parser.add_argument('tag', type=str, help='txs/balaces')
 
     def get(self, asset_id):
-        asset_id.strip().lower()
+        asset_id = asset_id.strip().lower()
         args = self.parser.parse_args()
         page = args.get('page')
         tag = args.get('tag')

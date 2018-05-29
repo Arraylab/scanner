@@ -25,7 +25,7 @@ class OdinAPI(Resource):
 
             uri = data['uri']
             arguments = uri.split('#')[0]
-            arguments.strip()
+            arguments = arguments.strip().lower()
             argument_list = [arg for arg in arguments.split('/') if arg != ""]
             if len(argument_list) < 1 or argument_list[0] != self.ppk:
                 return responses.wrap_ordin_response(400, uri)
