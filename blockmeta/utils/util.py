@@ -52,10 +52,8 @@ def wrap_response(data='', status='success', code='200', message='', **kwargs):
     return dict(status=status, data=data, code=code, message=message)
 
 
-def wrap_error_response(message='', data='', status='failure', code='500'):
-    lang = g.lang if g.get('lang', None) else 'zh'
-    response = ERROR_MSG[lang][message]
-    return dict(status=status, data=data, code=code, message=response)
+def wrap_error_response(message='', data='', status='failure', code='404'):
+    return dict(status=status, data=data, code=code, message=message)
 
 
 def valid_addr(addr):

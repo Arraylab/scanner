@@ -66,7 +66,7 @@ class BuiltinDriver:
 
 	def search_asset_by_id(self, asset_id):
 		asset_dict = self.mongo_cli.get_one(table=FLAGS.asset_info, cond={FLAGS.asset_id: asset_id}, fields={'asset_id': True, '_id': False})
-		return asset_id.get('asset_id', None) if asset_dict is not None else None
+		return asset_dict.get('asset_id', None) if asset_dict is not None else None
 
 	def search_asset_by_definition(self, definition):
 		asset_dict = self.mongo_cli.get_many(table=FLAGS.asset_info, cond={'$or': [{'asset_definition.name': definition}, {'asset_definition.symbol': definition}]}, items={'asset_id': True, '_id': False})

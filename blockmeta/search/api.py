@@ -20,6 +20,5 @@ class SearchAPI(Resource):
         info = args.get('q')
         found = self.manager.search(info)
         if not found:
-            return util.wrap_error_response(status='failure', data=found, code='404')
-
+            return util.wrap_error_response(status='failure', code='404')
         return util.wrap_response(status='success', data=found, code='302')

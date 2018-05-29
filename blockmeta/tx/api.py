@@ -2,7 +2,7 @@
 
 from flask import current_app
 from flask.ext.restful import Resource, reqparse
-
+from blockmeta.utils.bytom import remove_0x
 from blockmeta.constant import DEFAULT_OFFSET, DEFAULT_START
 from blockmeta.utils import util
 from blockmeta.utils.bytom import is_hash_prefix
@@ -20,7 +20,7 @@ class TxAPI(Resource):
         super(TxAPI, self).__init__()
 
     def get(self, tx_hash):
-        tx_hash = tx_hash.strip().lower()
+        tx_hash = remove_0x(tx_hash.strip().lower())
         try:
             if not is_hash_prefix(tx_hash):
                 raise Exception("Transaction hash is wrong!")
