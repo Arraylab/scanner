@@ -40,6 +40,5 @@ class AssetListAPI(Resource):
         page = args.get('page')
         page = 1 if page is None or not isinstance(
             page, int) or page <= 0 else page
-        print '********************************', page
         result = self.manager.list_assets(page)
         return result
