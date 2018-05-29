@@ -14,6 +14,38 @@ class DbProxy:
         self.logger.add_file_handler('dbproxy')
         self.mongo_cli = MongodbClient(host=flags.FLAGS.mongo_bytom_host, port=flags.FLAGS.mongo_bytom_port)
         self.mongo_cli.use_db(flags.FLAGS.mongo_bytom)
+        self._add_indexes()
+
+    def _add_indexes(self):
+        self._add_block_indexes()
+        self._add_transaction_indexes()
+        self._add_address_indexes()
+        self._add_asset_indexes()
+
+    def _add_block_indexes(self):
+        self.mongo_cli.add_index(flags.FLAGS.block_info, [('height', -1)])
+        self.mongo_cli.add_index(flags.FLAGS.block_info, [('hash', 'hashed')])
+
+        # self.mongo_cli.add_index(flags.FLAGS.block_info, [('miner', 'hashed')])
+        # self.mongo_cli.add_index(flags.FLAGS.block_info, [('timestamp', -1)])
+
+    def _add_address_indexes(self):
+        self.mongo_cli.add_index(flags.FLAGS.address_info, [('address', 'hashed')])
+        self.mongo_cli.add_index(flags.FLAGS.address_info, [('block_height', -1)])
+        self.mongo_cli.add_index(flags.FLAGS.address_info, [('balance', -1)])
+
+    def _add_asset_indexes(self):
+        self.mongo_cli.add_index(flags.FLAGS.asset_info, [('asset_id', 'hashed')])
+        self.mongo_cli.add_index(flags.FLAGS.asset_info, [('block_height', -1)])
+
+        # self.mongo_cli.add_index(flags.FLAGS.asset_info, [('amount', -1), ('retire', -1)])
+
+    def _add_transaction_indexes(self):
+        self.mongo_cli.add_index(flags.FLAGS.transaction_info, [('id', 'hashed')])
+        self.mongo_cli.add_index(flags.FLAGS.transaction_info, [('block_height', -1)])
+
+        # self.mongo_cli.add_index(flags.FLAGS.transaction_info, [('block_hash', 'hashed')])
+        # self.mongo_cli.add_index(flags.FLAGS.transaction_info, [('inputs.arbitrary', -1)], sparse=True)
 
     def get_height(self):
         state = self.mongo_cli.get(flags.FLAGS.db_status)
