@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from flask import current_app
-
 from blockmeta.constant import DEFAULT_OFFSET
 from driver.bytom.builtin import BuiltinDriver
 from tools import flags

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from blockmeta.redis_cli_conf import cache, cache_key
 from flask_restful import Resource, reqparse, abort
 from blockmeta.utils.bytom import remove_0x
 from blockmeta.utils.util import valid_addr
@@ -15,6 +15,7 @@ class AddressAPI(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('page', type=int, help='transaction page number')
 
+    @cache.cached(timeout=60 * 3, key_prefix=cache_key)
     def get(self, address):
         address = remove_0x(address.strip().lower())
         args = self.parser.parse_args()
