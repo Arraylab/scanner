@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from flask import current_app
-
 from blockmeta.constant import DEFAULT_OFFSET
 from driver.bytom.builtin import BuiltinDriver
 from tools import flags
@@ -15,11 +14,7 @@ class BlockManager:
         self.logger = current_app.logger
 
     def handle_block(self, block_id):
-        try:
-            return self.driver.request_block_info(block_id)
-        except Exception, e:
-            self.logger.error("BlockManager.handle_block Error: %s" % str(e))
-            raise Exception("handle_block error: %s", e)
+        return self.driver.request_block_info(block_id)
 
     def list_blocks(self, start, end):
         blocks = {}

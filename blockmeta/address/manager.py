@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from driver.bytom.builtin import BuiltinDriver
 from tools import flags
 

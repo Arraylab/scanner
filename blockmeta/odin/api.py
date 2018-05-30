@@ -2,6 +2,7 @@
 import json
 from utils import responses
 from flask_restful import Resource, reqparse
+from blockmeta.utils.bytom import remove_0x
 from manager import OdinManager
 from tools import flags
 
@@ -24,8 +25,8 @@ class OdinAPI(Resource):
             data = data['interest']
 
             uri = data['uri']
+            uri = uri.strip().lower()
             arguments = uri.split('#')[0]
-            arguments.strip()
             argument_list = [arg for arg in arguments.split('/') if arg != ""]
             if len(argument_list) < 1 or argument_list[0] != self.ppk:
                 return responses.wrap_ordin_response(400, uri)
@@ -34,6 +35,7 @@ class OdinAPI(Resource):
             elif len(argument_list) == 2:
                 return responses.parse_next_response(uri)
             elif len(argument_list) == 3:
+                argument_list[2] = remove_0x(argument_list[2])
                 found = self.manager.handle_odin(argument_list[1], argument_list[2])
                 if found:
                     return responses.wrap_ordin_response(200, uri, found)
