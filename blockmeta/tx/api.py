@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-
 from flask import current_app
-from flask.ext.restful import Resource, reqparse
+from blockmeta.redis_cli_conf import cache, cache_key
+from flask_restful import Resource, reqparse
 from blockmeta.utils.bytom import remove_0x
 from blockmeta.constant import DEFAULT_OFFSET, DEFAULT_START
 from blockmeta.utils import util
 from blockmeta.utils.bytom import is_hash_prefix
+from blockmeta.redis_cli_conf import cache
 from manager import TxManager
 from tools import flags
 
@@ -19,6 +20,7 @@ class TxAPI(Resource):
         self.manager = TxManager()
         super(TxAPI, self).__init__()
 
+    @cache.cached(timeout=60 * 3, key_prefix=cache_key)
     def get(self, tx_hash):
         tx_hash = remove_0x(tx_hash.strip().lower())
         try:
@@ -45,6 +47,7 @@ class TxListAPI(Resource):
 
         super(TxListAPI, self).__init__()
 
+    @cache.cached(timeout=60 * 3, key_prefix=cache_key)
     def get(self):
         try:
             args = self.parser.parse_args()

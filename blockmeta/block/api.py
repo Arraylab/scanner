@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import current_app
+from blockmeta.redis_cli_conf import cache, cache_key
 from flask_restful import Resource, reqparse
 from blockmeta.utils.bytom import remove_0x
 from blockmeta.constant import DEFAULT_OFFSET
@@ -18,6 +19,7 @@ class BlockAPI(Resource):
 
         super(BlockAPI, self).__init__()
 
+    @cache.cached(timeout=60 * 3, key_prefix=cache_key)
     def get(self, block_id):
         block_id = remove_0x(block_id.strip().lower())
 
@@ -37,6 +39,7 @@ class BlockListAPI(Resource):
 
         super(BlockListAPI, self).__init__()
 
+    @cache.cached(timeout=60 * 3, key_prefix=cache_key)
     def get(self):
         try:
             args = self.parser.parse_args()
