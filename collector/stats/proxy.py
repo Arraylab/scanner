@@ -110,12 +110,17 @@ class DbProxy(object):
             raise exception.DBError(e)
         return coinbase
 
+    def count_accounts(self):
+        return self.mongo_cli.count('address_info')
+
+    def count_txs(self):
+        return self.mongo_cli.count('transaction_info')
+
 
 if __name__ == '__main__':
     FLAGS(sys.argv)
     db = DbProxy()
-    print db.request_node_status()
-    print
-    print db.get_chain_stats_list()
-    print
-    print db.get_node_stats_list()
+    print db.get_recent_height()
+    print db.count_accounts()
+    print db.count_txs()
+

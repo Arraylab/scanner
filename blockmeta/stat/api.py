@@ -16,10 +16,11 @@ class ChainStatsAPI(Resource):
     def get(self):
         try:
             result = self.manager.list_chain_stats()
-            return util.wrap_response(data=result)
         except Exception as e:
             self.logger.error("ChainStatsAPI.get Error: %s" % str(e))
-            return util.wrap_error_response("tx_error")
+            return util.wrap_error_response()
+
+        return util.wrap_response(data=result)
 
 
 class NodeStatsAPI(Resource):
@@ -32,7 +33,8 @@ class NodeStatsAPI(Resource):
     def get(self):
         try:
             result = self.manager.list_node_stats()
-            return util.wrap_response(data=result)
         except Exception as e:
             self.logger.error("NodeStatsAPI.get Error: %s" % str(e))
-            return util.wrap_error_response('tx_error')
+            return util.wrap_error_response()
+
+        return util.wrap_response(data=result)

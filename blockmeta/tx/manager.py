@@ -17,20 +17,15 @@ class TxManager:
         self.driver = BuiltinDriver()
 
     def handle_tx(self, tx_hash):
-        try:
-            return self.driver.request_tx_info(tx_hash)
-        except Exception, e:
-            self.logger.error("TxManager.handle_tx Error: %s" % str(e))
-            raise Exception("handle_tx error: %s", e)
+        self.logger.info('handle tx, tx hash: %s' % str(tx_hash))
+        return self.driver.request_tx_info(tx_hash)
 
     def list_txs(self, start, end):
+        self.logger.info('list txs, pages: %s - %s' % (str(start), str(end)))
         txs = {}
-        try:
-            result, total_num = self.driver.get_tx_list(start, end)
-            if result:
-                txs['total_page'] = total_num / DISPLAY_LEN + 1
-                txs['txs'] = result
-            return txs
-        except Exception, e:
-            self.logger.error("TxManager.list_txs Error: %s" % str(e))
-            raise Exception("list_txs error: %s", e)
+        result, total_num = self.driver.get_tx_list(start, end)
+        if result:
+            txs['total_page'] = total_num / DISPLAY_LEN + 1
+            txs['txs'] = result
+        return txs
+
