@@ -11,24 +11,24 @@ import blockmeta.asset.api
 
 # modules = [(handle, urls, args)]
 MODULES = [
-    (blockmeta.address.api.AddressAPI, ('/api/address/<string:address>',), {'endpoint': 'address'}),
+    (blockmeta.address.api.AddressAPI, ('/api/v1/address/<string:address>',), {'endpoint': 'address'}),
 
-    (blockmeta.tx.api.TxAPI, ('/api/tx/<string:tx_hash>',), {'endpoint': 'tx'}),
-    (blockmeta.tx.api.TxListAPI, ('/api/txs',), {'endpoint': 'txs'}),
+    (blockmeta.tx.api.TxAPI, ('/api/v1/tx/<string:tx_hash>',), {'endpoint': 'tx'}),
+    (blockmeta.tx.api.TxListAPI, ('/api/v1/txs',), {'endpoint': 'txs'}),
 
-    (blockmeta.block.api.BlockAPI, ('/api/block/<string:block_id>',), {'endpoint': 'block'}),
-    (blockmeta.block.api.BlockListAPI, ('/api/blocks',), {'endpoint': 'blocks'}),
+    (blockmeta.block.api.BlockAPI, ('/api/v1/block/<string:block_id>',), {'endpoint': 'block'}),
+    (blockmeta.block.api.BlockListAPI, ('/api/v1/blocks',), {'endpoint': 'blocks'}),
 
-    (blockmeta.search.api.SearchAPI, ('/api/search',), {'endpoint': 'search'}),
+    (blockmeta.search.api.SearchAPI, ('/api/v1/search',), {'endpoint': 'search'}),
 
-    (blockmeta.stat.api.ChainStatsAPI, ('/api/chain-stats',), {'endpoint': 'chain-stats'}),
-    (blockmeta.stat.api.NodeStatsAPI, ('/api/node-stats',), {'endpoint': 'node-stats'}),
+    (blockmeta.stat.api.ChainStatsAPI, ('/api/v1/chain-stats',), {'endpoint': 'chain-stats'}),
+    (blockmeta.stat.api.NodeStatsAPI, ('/api/v1/node-stats',), {'endpoint': 'node-stats'}),
 
 
-    (blockmeta.odin.api.OdinAPI, ('/api/odin',), {'endpoint': 'odin'}),
+    (blockmeta.odin.api.OdinAPI, ('/api/v1/odin',), {'endpoint': 'odin'}),
 
-    (blockmeta.asset.api.AssetAPI, ('/api/asset/<string:asset_id>',), {'endpoint': 'asset'}),
-    (blockmeta.asset.api.AssetListAPI, ('/api/assets',), {'endpoint': 'assets'})
+    (blockmeta.asset.api.AssetAPI, ('/api/v1/asset/<string:asset_id>',), {'endpoint': 'asset'}),
+    (blockmeta.asset.api.AssetListAPI, ('/api/v1/assets',), {'endpoint': 'assets'})
 ]
 
 
