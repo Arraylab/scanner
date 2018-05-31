@@ -1,7 +1,8 @@
-from collector.log import Logger
+# -*- coding: utf-8 -*-
 from collector.db.mongodriver import MongodbClient
 from collector.agent.fetcher import Fetcher
 from tools import flags
+from collector.log import Logger
 
 
 class DbProxy:

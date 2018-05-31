@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-from flask import current_app
-from blockmeta.redis_cli_conf import cache, cache_key
-from flask_restful import Resource, reqparse
-from blockmeta.utils.bytom import remove_0x
+
 from blockmeta.constant import DEFAULT_OFFSET, DEFAULT_START
+from blockmeta.redis_cli_conf import cache, cache_key
 from blockmeta.utils import util
-from blockmeta.utils.bytom import is_hash_prefix
-from blockmeta.redis_cli_conf import cache
+from blockmeta.utils.bytom import is_hash_prefix, remove_0x
+from flask import current_app
+from flask_restful import Resource, reqparse
 from manager import TxManager
 from tools import flags
 
@@ -26,12 +25,12 @@ class TxAPI(Resource):
         try:
             if not is_hash_prefix(tx_hash):
                 raise Exception("Transaction hash is wrong!")
-
-            # TODO: return 404 if tx corresponding to tx_hash not found
-            return self.manager.handle_tx(tx_hash) if tx_hash else {}
-        except Exception, e:
+            result = self.manager.handle_tx(tx_hash) if tx_hash else {}
+        except Exception as e:
             self.logger.error("TxAPI.get Error: %s" % str(e))
-            util.wrap_error_response("tx_error")
+            return util.wrap_error_response()
+
+        return util.wrap_response(data=result)
 
 
 class TxListAPI(Resource):
@@ -57,7 +56,7 @@ class TxListAPI(Resource):
             # return block in range [start, end)
             if not isinstance(start, int):
                 if isinstance(page, int):
-                    start = DEFAULT_OFFSET * (page-1)
+                    start = DEFAULT_OFFSET * (page - 1)
                 else:
                     start = DEFAULT_START
 
@@ -69,7 +68,8 @@ class TxListAPI(Resource):
 
             result = self.manager.list_txs(start, end)
             result['page'] = 1 if not page else int(page)
-            return util.wrap_response(data=result)
-        except Exception, e:
+        except Exception as e:
             self.logger.error("TxListAPI.get Error: %s" % str(e))
-            return util.wrap_error_response('tx_error')
+            return util.wrap_error_response()
+
+        return util.wrap_response(data=result)

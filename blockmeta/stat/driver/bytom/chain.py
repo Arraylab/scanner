@@ -135,14 +135,12 @@ class ChainStats(object):
         recent_height = self.proxy.get_recent_height()
         block = self.proxy.get_block_by_height(recent_height)
         recent_timestamp = block['timestamp']
-        print 'recent_timestamp:', recent_timestamp
         block_hash = block['hash']
         if recent_timestamp + 86400 < ticks:
             return []
 
         close_height = recent_height - 576
         close_time = self.proxy.get_block_by_height(close_height)['timestamp']
-        print 'close_time:', close_time
         if ticks - close_time < 86400:
             while ticks - close_time < 86400:
                 close_height -= 1
@@ -155,11 +153,9 @@ class ChainStats(object):
         # 所有块时间戳
         tps = self.proxy.get_timestamps_in_range(close_height, recent_height)
         timestamps = [t['timestamp'] for t in tps]
-        print 'timestamps:', timestamps
 
         total_block_num = recent_height - close_height
         timestamps.sort()
-        print 'timestamps-2:', timestamps
         average_block_time = 86400 / total_block_num
 
         #  24小时内出块总数、平均时间、中位数、最大、最小

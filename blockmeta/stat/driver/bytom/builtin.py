@@ -14,9 +14,3 @@ class BuiltinDriver:
 
     def request_chain_status(self):
         return self.chain_stats.get_chain_status()
-
-
-if __name__ == '__main__':
-    b = BuiltinDriver()
-    print b.request_chain_status()
-    print b.request_node_status()

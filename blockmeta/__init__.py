@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
+from blockmeta import urls, log
 from flask import Flask
 from redis_cli_conf import redis_cli_config, cache
-from blockmeta import log, urls
 from tools import flags
+
 
 FLAGS = flags.FLAGS
 FLAGS(sys.argv)

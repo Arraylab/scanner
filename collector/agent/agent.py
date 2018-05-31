@@ -1,9 +1,9 @@
 # coding=utf-8
-import time
 
-from collector.log import Logger
+import time
 from collector.agent.db_proxy import DbProxy
 from collector.agent.fetcher import Fetcher
+from collector.log import Logger
 from tools import flags
 
 FLAGS = flags.FLAGS
@@ -37,13 +37,24 @@ class DataAgent:
                 pre_block_in_db = self.proxy.get_block_by_height(self.height)
                 if node_block['previous_block_hash'] != pre_block_in_db['hash']:
                     break
-                self.logger.info('adding block: %s | %s' % (str(node_block['height']), str(node_block['hash'])))
+                self.logger.info(
+                    'adding block: %s | %s' %
+                    (str(
+                        node_block['height']), str(
+                        node_block['hash'])))
                 self.proxy.save_block(node_block)
                 self.height = node_block['height']
-                self.logger.info('add block: %s | %s' % (str(node_block['height']), str(node_block['hash'])))
+                self.logger.info(
+                    'add block: %s | %s' %
+                    (str(
+                        node_block['height']), str(
+                        node_block['hash'])))
             except Exception as e:
-                self.logger.error('collector.agent: sync save block error: %s\nblock:\n%s\n' % (str(e), str(node_block)))
-                raise Exception('collector.agent: sync save block error: %s', e)
+                self.logger.error(
+                    'collector.agent: sync save block error: %s\nblock:\n%s\n' %
+                    (str(e), str(node_block)))
+                raise Exception(
+                    'collector.agent: sync save block error: %s', e)
 
     def roll_back(self):
         self.proxy.remove_future_block()
