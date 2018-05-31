@@ -15,8 +15,9 @@ class StatManager(object):
         self.driver = BuiltinDriver()
 
     def list_chain_stats(self):
+        self.logger.info('list chain stats')
         return self.driver.request_chain_status()
 
     def list_node_stats(self):
-        self.logger.debug()
+        self.logger.info('list node stats')
         return self.driver.request_node_status()

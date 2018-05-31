@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-from blockmeta.redis_cli_conf import cache, cache_key
+
 from flask_restful import Resource, reqparse, abort
+from flask import current_app
+from blockmeta.redis_cli_conf import cache, cache_key
 from blockmeta.utils.bytom import remove_0x
 from blockmeta.utils.util import valid_addr
 from blockmeta.utils import util
@@ -12,6 +14,7 @@ FLAGS = flags.FLAGS
 
 class AddressAPI(Resource):
     def __init__(self):
+        self.logger = current_app.logger
         self.manager = AddressManager()
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('page', type=int, help='transaction page number')
