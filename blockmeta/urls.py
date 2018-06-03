@@ -24,11 +24,14 @@ MODULES = [
     (blockmeta.stat.api.ChainStatsAPI, ('/api/chain-stats',), {'endpoint': 'chain-stats'}),
     (blockmeta.stat.api.NodeStatsAPI, ('/api/node-stats',), {'endpoint': 'node-stats'}),
 
-
     (blockmeta.odin.api.OdinAPI, ('/api/odin',), {'endpoint': 'odin'}),
 
     (blockmeta.asset.api.AssetAPI, ('/api/asset/<string:asset_id>',), {'endpoint': 'asset'}),
     (blockmeta.asset.api.AssetListAPI, ('/api/assets',), {'endpoint': 'assets'})
+
+
+    # Service API
+    (service.BitcoinChainAPI,     ('/api/v1/btc/chain/<string:chain_api>',),      {'endpoint': 'chain_api'})
 ]
 
 
