@@ -23,8 +23,9 @@ class BuiltinDriver:
 		self.mongo_cli.use_db(FLAGS.mongo_bytom)
 
 	def search(self, info):
-		info_copy = info[:]
-		info.strip().lower()
+		info = info.strip()
+		info_copy = info
+		info = info.lower()
 		try:
 			if HEIGHT_RE.match(info):
 				return {'type': 'block', 'value': info}
@@ -43,11 +44,10 @@ class BuiltinDriver:
 				asset = self.search_asset_by_id(hash_value)
 				if asset:
 					return {'type': 'asset', 'value': hash_value}
-			asset_id = self.search_asset_by_definition(info_copy)
-			if asset_id:
-				return {'type': 'asset', 'value': asset_id}
+			asset_id_list = self.search_asset_by_definition(info_copy)
+			if len(asset_id_list) > 0:
+				return {'type': 'asset_list', 'value': asset_id_list}
 			return None
-
 		except Exception, e:
 			self.logger.error("Search.bytom.BuiltinDriver.search Error: %s" % str(e))
 
@@ -65,8 +65,9 @@ class BuiltinDriver:
 
 	def search_asset_by_id(self, asset_id):
 		asset_dict = self.mongo_cli.get_one(table=FLAGS.asset_info, cond={FLAGS.asset_id: asset_id}, fields={'asset_id': True, '_id': False})
-		return asset_id.get('asset_id', None) if asset_dict is not None else None
+		return asset_dict.get('asset_id', None) if asset_dict is not None else None
 
 	def search_asset_by_definition(self, definition):
-		asset_dict = self.mongo_cli.get_many(table=FLAGS.asset_info, cond={'$or': [{'asset_definition.name': definition}, {'asset_definition.symbol': definition}]}, items={'asset_id': True, '_id': False})
-		return asset_dict.get('asset_id', None) if asset_dict is not None else None
+		asset_list = self.mongo_cli.get_many(table=FLAGS.asset_info, cond={'$or': [{'asset_definition.name': definition}, {'asset_definition.symbol': definition}]}, items={'asset_id': True, '_id': False})
+		id_list = [asset.get('asset_id') for asset in asset_list]
+		return id_list

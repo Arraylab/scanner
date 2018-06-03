@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-
 from gevent import monkey; monkey.patch_all()
 import gevent
 import os
 from proxy import DbProxy
 import socket
+import sys
 import threading
 import time
+from tools import flags
 from utils import data_dir, parse_address
 
 
@@ -26,7 +27,7 @@ class NodeStats(object):
         self.time_lapse = 0
         self.proxy = DbProxy()
         # self.timestamp = time.time()
-        # self.positons = []
+        # self.position = []
 
     def node_conn(self, host, timeout):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -67,3 +68,9 @@ class NodeStats(object):
         status = self.get_node_stats()
         print 'node status: ', status
         self.proxy.save_node(status)
+
+
+if __name__ == '__main__':
+    flags.FLAGS(sys.argv)
+    n = NodeStats()
+    print n.get_node_stats()

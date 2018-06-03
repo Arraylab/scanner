@@ -23,10 +23,13 @@ class BuiltinDriver:
 
     def request_block_info(self, arg):
         try:
-            arg.strip().lower()
             hash_or_height = remove_0x(arg)
-            is_hash = len(hash_or_height) == 64
-            return self.get_block_by_hash(hash_or_height) if is_hash else self.get_block_by_height(hash_or_height)
+            if len(hash_or_height) == 64:
+                return self.get_block_by_hash(hash_or_height)
+            elif hash_or_height.isdigit() and int(hash_or_height) >= 0:
+                return self.get_block_by_height(hash_or_height)
+            else:
+                return None
         except Exception, e:
             self.logger.error("Block.BuiltinDriver.request_block_info Error: %s" % str(e))
             raise Exception("request_block_info error: %s", e)
@@ -46,18 +49,10 @@ class BuiltinDriver:
             raise Exception("list_blocks error: %s", e)
 
     def get_block_by_height(self, height):
-        try:
-            if int(height) < 0:
-                raise Exception("Block height is wrong!")
-            block = self.mongo_cli.get_one(
-                table=FLAGS.block_info, cond={
-                    FLAGS.block_height: int(height)})
-            if block is None:
-                raise Exception("Block not found!")
-            block_info = self._show_block(block)
-
-        except Exception as e:
-            raise exception.DBError(e)
+        block = self.mongo_cli.get_one(
+            table=FLAGS.block_info, cond={
+                FLAGS.block_height: int(height)})
+        block_info = self._show_block(block) if block is not None else None
         return block_info
 
     def get_block_by_hash(self, blockhash):

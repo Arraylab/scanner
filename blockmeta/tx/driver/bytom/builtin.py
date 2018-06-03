@@ -26,7 +26,6 @@ class BuiltinDriver:
 
     def request_tx_info(self, tx_hash):
         try:
-            tx_hash.strip().lower()
             tx = self.get_tx_by_hash(remove_0x(tx_hash))
             if tx is None:
                 raise Exception("Transaction not found!")

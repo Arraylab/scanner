@@ -240,7 +240,6 @@ class ChainStats(object):
 
     def _compute(self, stats_list, low, high):
         s = self.chain_status_between(low, high)
-        print '**height:', low
         mutex.acquire(1)
         stats_list.append(s)
         mutex.release()
@@ -248,8 +247,6 @@ class ChainStats(object):
     def check_syn_height(self):
         chain_height = self.fetcher.request_chain_height()
         db_height = self.proxy.get_recent_height()
-        print 'chain height: ', chain_height
-        print 'db_height: ', db_height
         if db_height < chain_height:
             return False
         return True
@@ -261,15 +258,12 @@ class ChainStats(object):
         recent_height = self.proxy.get_recent_height()
         current_time = self.proxy.get_block_by_height(recent_height)['timestamp']
 
-        print current_time
         genesis_time = self.proxy.get_block_by_height(0)['timestamp']
         days = (current_time - genesis_time) / 86400
-        print 'days:', days
 
         tps = self.proxy.get_timestamps_in_range(0, recent_height+1)
         timestamps = [t['timestamp'] for t in tps]
         timestamps.sort()
-        print 'timestamps', tps, timestamps
 
         height_point = []
         point = genesis_time
@@ -279,11 +273,9 @@ class ChainStats(object):
             height_point.append(i)
             point = timestamps[i]
 
-        print 'height point: ', height_point
         result = []
         jobs = [gevent.spawn(self._compute, result, height_point[i], height_point[i+1]) for i in range(len(height_point)-1)]
         gevent.joinall(jobs)
-        print 'chain stats: ', result
         return result
 
     def genesis_status(self):
@@ -312,9 +304,7 @@ class ChainStats(object):
     def load(self):
         if self.proxy.get_status() is None:
             status_genesis = self.genesis_status()
-            print 'status_genesis', status_genesis
             status_history = self.chain_status_history()
-            print 'status_history', status_history
             status_history.append(status_genesis)
             self.proxy.save_chain_patch(status_history)
         else:
@@ -322,5 +312,4 @@ class ChainStats(object):
 
     def save(self):
         status = self.chain_status()
-        print 'status: ', status
         self.proxy.save_chain(status)

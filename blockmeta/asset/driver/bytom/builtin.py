@@ -26,9 +26,13 @@ class BuiltinDriver:
         asset_info = self._show_asset(asset_object, page, tag)
         return asset_info
 
+    @staticmethod
+    def max_pages(num):
+        return max(1, (num-1)/10+1)
+
     def list_assets(self, page=1):
         asset_num = self.mongo_cli.get_size(table=FLAGS.asset_info)
-        page_max = max(1, (asset_num - 1) / 10 + 1)
+        page_max = self.max_pages(asset_num)
         page = min(page, page_max)
         skip = (page - 1) * 10
         asset_objects = self.mongo_cli. get_many(
@@ -70,7 +74,7 @@ class BuiltinDriver:
             return {}
         result = self._show_asset_base_info(asset_object)
         tag = 'txs' if tag not in ['txs', 'balances'] else tag
-        page_max = len(asset_object.get(tag)) / 10 + 1
+        page_max = self.max_pages(len(asset_object.get(tag)))
         page = min(page_max, page)
         result['info'] = self._get_txs_info(
             asset_object.get('txs'),
@@ -82,7 +86,6 @@ class BuiltinDriver:
         return result
 
     def _get_txs_info(self, tx_ids, page):
-        page = min(len(tx_ids) / 10 + 1, page)
         start = (page - 1) * 10
         end = page * 10
         tx_ids.reverse()

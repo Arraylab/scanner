@@ -12,6 +12,3 @@ class ChainStats:
 
         self.mongo_cli = MongodbClient(host=FLAGS.mongo_bytom_host, port=FLAGS.mongo_bytom_port)
         self.mongo_cli.use_db(flags.FLAGS.mongo_bytom)
-
-
-
