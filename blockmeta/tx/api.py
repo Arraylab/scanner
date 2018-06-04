@@ -19,18 +19,18 @@ class TxAPI(Resource):
         self.manager = TxManager()
         super(TxAPI, self).__init__()
 
-    # @cache.cached(timeout=60 * 3, key_prefix=cache_key)
+    @cache.cached(timeout=60 * 3, key_prefix=cache_key)
     def get(self, tx_hash):
         tx_hash = remove_0x(tx_hash.strip().lower())
         try:
             if not is_hash_prefix(tx_hash):
                 raise Exception("Transaction hash is wrong!")
-            result = self.manager.handle_tx(tx_hash) if tx_hash else {}
+
+            # TODO return 404 if tx corresponding to tx_hash not found
+            return self.manager.handle_tx(tx_hash) if tx_hash else {}
         except Exception as e:
             self.logger.error("TxAPI.get Error: %s" % str(e))
-            return util.wrap_error_response()
-
-        return util.wrap_response(data=result)
+            util.wrap_error_response()
 
 
 class TxListAPI(Resource):

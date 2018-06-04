@@ -31,9 +31,8 @@ class AddressAPI(Resource):
 
             if not valid_addr(address):
                 abort(400, message="invalid address")
-
-            result = self.manager.handle_address(address, page)
+            # TODO: return 404 when wrong
+            return self.manager.handle_address(address, page)
         except Exception, e:
             self.logger.error("BlockAPI.get Error: %s" % str(e))
-            return util.wrap_error_response()
-        return util.wrap_response(data=result)
+            util.wrap_error_response()
