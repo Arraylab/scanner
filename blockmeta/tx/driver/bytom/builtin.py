@@ -101,8 +101,8 @@ class BuiltinDriver:
         for field in fields:
             result[field] = tx[field]
 
-        # block = self.block_manager.handle_block(result['block_hash'])
-        # result['block'] = block
+        block = self.block_manager.handle_block(result['block_hash'])
+        result['block'] = block
 
         state = self.mongo_cli.get(flags.FLAGS.db_status)
         height = 0 if state is None else state[flags.FLAGS.block_height]
