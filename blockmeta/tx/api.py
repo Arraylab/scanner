@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+from flask import current_app
+from flask_restful import Resource, reqparse
 
 from blockmeta.constant import DEFAULT_OFFSET, DEFAULT_START
 from blockmeta.redis_cli_conf import cache, cache_key
 from blockmeta.utils import util
 from blockmeta.utils.bytom import is_hash_prefix, remove_0x
-from flask import current_app
-from flask_restful import Resource, reqparse
 from manager import TxManager
 from tools import flags
 
@@ -19,7 +19,7 @@ class TxAPI(Resource):
         self.manager = TxManager()
         super(TxAPI, self).__init__()
 
-    @cache.cached(timeout=60 * 3, key_prefix=cache_key)
+    # @cache.cached(timeout=60 * 3, key_prefix=cache_key)
     def get(self, tx_hash):
         tx_hash = remove_0x(tx_hash.strip().lower())
         try:
