@@ -24,6 +24,24 @@ class DbProxy(object):
     def get_block_by_height(self, height):
         return self.mongo_cli.get_one(flags.FLAGS.block_info, {'height': height})
 
+    def get_block_hash_by_height(self, height):
+        return self.mongo_cli.get_one(flags.FLAGS.block_info, {'height': height}, fields={'hash': 1, '_id': 0})
+
+    def get_difficulty(self):
+        try:
+            height = self.get_recent_height()
+            difficulty = self.mongo_cli.get_one(FLAGS.block_info, {'height': height}, fields={'difficulty': 1, '_id': 0})
+        except Exception as e:
+            raise exception.DBError(e)
+        return difficulty
+
+    def get_difficulty_by_height(self, height):
+        try:
+            difficulty = self.mongo_cli.get_one(FLAGS.block_info, {'height': height}, fields={'difficulty': 1, '_id': 0})
+        except Exception as e:
+            raise exception.DBError(e)
+        return difficulty
+
     def get_hash_rate_in_range(self, start, end):
         try:
             hash_rates = self.mongo_cli.get_many(
@@ -41,6 +59,8 @@ class DbProxy(object):
                 table=FLAGS.block_info,
                 items={"timestamp": 1, "_id": 0},
                 n=end-start,
+                sort_key='timestamp',
+                ascend=True,
                 skip=start)
         except Exception as e:
             raise exception.DBError(e)
@@ -91,6 +111,35 @@ class DbProxy(object):
         except Exception as e:
             raise exception.DBError(e)
         return coinbase
+
+    def get_total_tx_num(self):
+        try:
+            total_num = self.mongo_cli.count(FLAGS.transaction_info)
+        except Exception as e:
+            raise exception.DBError(e)
+        return total_num
+
+    def get_total_addr_num(self):
+        try:
+            total_num = self.mongo_cli.count(FLAGS.address_info)
+        except Exception as e:
+            raise exception.DBError(e)
+        return total_num
+
+    def get_total_btm(self):
+        init_btm = 140700041250000000
+        init_award = 41250000000
+        epoch_length = 840000
+        current_height = self.get_recent_height()
+        epoch = current_height // epoch_length
+
+        total_num = 0
+        for n in range(epoch + 1):
+            award = init_award / (n + 1)
+            total_num += award * (current_height - n * epoch_length)
+
+        total_num += init_btm
+        return total_num
 
 
 if __name__ == '__main__':
