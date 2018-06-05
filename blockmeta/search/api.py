@@ -15,7 +15,7 @@ class SearchAPI(Resource):
         self.parser.add_argument('q', type=str, help='query info', ignore=False)
         super(SearchAPI, self).__init__()
 
-    def get(self):
+    def post(self):
         args = self.parser.parse_args()
         info = args.get('q')
         found = self.manager.search(info)

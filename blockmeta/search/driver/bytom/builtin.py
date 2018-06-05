@@ -19,13 +19,15 @@ class BuiltinDriver:
 
     def __init__(self):
         self.logger = current_app.logger
-        self.mongo_cli = MongodbClient(host=FLAGS.mongo_bytom_host, port=FLAGS.mongo_bytom_port)
+        self.mongo_cli = MongodbClient(
+            host=FLAGS.mongo_bytom_host,
+            port=FLAGS.mongo_bytom_port)
         self.mongo_cli.use_db(FLAGS.mongo_bytom)
 
     def search(self, info):
-        info = info.strip()
+        # info = info.strip()
         info_copy = info
-        info = info.lower()
+        info = info.strip().lower()
         try:
             if HEIGHT_RE.match(info):
                 return {'type': 'block', 'value': info}
@@ -48,26 +50,33 @@ class BuiltinDriver:
             if len(asset_id_list) > 0:
                 return {'type': 'asset_list', 'value': asset_id_list}
             return None
-        except Exception, e:
-            self.logger.error("Search.bytom.BuiltinDriver.search Error: %s" % str(e))
+        except Exception as e:
+            self.logger.error(
+                "Search.bytom.BuiltinDriver.search Error: %s" %
+                str(e))
 
     def search_block_by_height(self, height):
-        block_dict = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: height}, fields={'hash': True, '_id': False})
-        return block_dict.get('hash', None) if block_dict is not None else None
+        return self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: height})
 
     def search_block_by_hash(self, block_hash):
-        block_dict = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_id: block_hash}, fields={'hash': True, '_id': False})
-        return block_dict.get('hash', None) if block_dict is not None else None
+        return self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_id: block_hash})
 
     def search_tx_by_hash(self, tx_hash):
-        tx_dict = self.mongo_cli.get_one(table=FLAGS.transaction_info, cond={FLAGS.tx_id: tx_hash}, fields={'id': True, '_id': False})
-        return tx_dict.get('id', None) if tx_dict is not None else None
+        return self.mongo_cli.get_one(table=FLAGS.transaction_info, cond={FLAGS.tx_id: tx_hash})
 
     def search_asset_by_id(self, asset_id):
-        asset_dict = self.mongo_cli.get_one(table=FLAGS.asset_info, cond={FLAGS.asset_id: asset_id}, fields={'asset_id': True, '_id': False})
-        return asset_dict.get('asset_id', None) if asset_dict is not None else None
+        asset_dict = self.mongo_cli.get_one(
+            table=FLAGS.asset_info, cond={
+                FLAGS.asset_id: asset_id})
+        return asset_dict
 
     def search_asset_by_definition(self, definition):
-        asset_list = self.mongo_cli.get_many(table=FLAGS.asset_info, cond={'$or': [{'asset_definition.name': definition}, {'asset_definition.symbol': definition}]}, items={'asset_id': True, '_id': False})
+        asset_list = self.mongo_cli.get_many(
+            table=FLAGS.asset_info, cond={
+                '$or': [
+                    {
+                        'asset_definition.name': definition}, {
+                        'asset_definition.symbol': definition}]}, items={
+                'asset_id': True, '_id': False})
         id_list = [asset.get('asset_id') for asset in asset_list]
         return id_list
