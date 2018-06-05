@@ -2,6 +2,7 @@
 
 from driver.bytom.builtin import BuiltinDriver
 from flask import current_app
+from blockmeta.utils.bytom import check_block_info, is_address, is_hash_prefix
 
 
 class ServiceManager(object):
@@ -11,37 +12,50 @@ class ServiceManager(object):
         self.logger = current_app.logger
 
     def handle_chain_api(self, query):
-        try:
-            # if query == 'getdifficulty':
-            #     return self.driver.get_difficulty()
-            if query == 'getblockcount':
-                return self.driver.get_block_count()
-            if query == 'reward':
-                return self.driver.get_reward()
-            if query == 'chainsize':
-                return self.driver.get_chain_size()
-            if query == 'totalbtc':
-                return self.driver.get_totalbtc()
-            if query == 'interval':
-                return self.driver.get_block_avg_time()
-            if query == 'hashrate':
-                return self.driver.get_nethash()
-            if query == 'avgtxnum':
-                return self.driver.get_avg_tx_num()
-            if query == 'nextdifficulty':
-                return self.driver.get_next_difficulty()
-            if query == 'lastminer':
-                return self.driver.get_last_miner()
-            if query == 'lastblockhash':
-                return self.driver.get_last_blockhash()
-            if query == 'unconfirmedcount':
-                return self.driver.get_uncomfirmed_txs()
-            if query == '24hrpoolstat':
-                return self.driver.get_mining_pool_stat()
-            if query == '24hrblockcount':
-                return self.driver.get_block_count_in_range()
-            if query == 'ticker':
-                return self.driver.get_ticker()
-        except Exception, e:
-            self.logger.error("BitcoinAPIManager.handle_chain_api Error: %s" % str(e))
-            raise Exception("handle_chain_api error: %s", e)
+        if query == 'getdifficulty':
+            return self.driver.get_difficulty()
+        if query == 'getblockcount':
+            return self.driver.get_block_count()
+        if query == 'reward':
+            return self.driver.get_recent_award()
+        if query == 'lastinterval':
+            return self.driver.get_last_block_interval()
+        if query == 'lastminer':
+            return self.driver.get_latest_block_miner()
+        if query == 'totalbtm':
+            return self.driver.get_total_btm()
+        if query == 'totaltxnum':
+            return self.driver.get_total_tx_num()
+        if query == 'totaladdrnum':
+            return self.driver.get_total_addr_num()
+        else:
+            raise Exception('No such Chain api')
+
+    def handle_block_api(self, api_info, query):
+        tag = check_block_info(api_info)
+        if not tag:
+            raise Exception("Invalid Parameter: %s" % api_info)
+
+        if query == 'info':
+            if tag == 'HASH':
+                return self.driver.get_block_by_hash(tag)
+            else:
+                return self.driver.get_block_by_height(tag)
+        else:
+            raise Exception('No such Block api')
+
+    def handle_tx_api(self, api_info, query):
+        if not is_hash_prefix(api_info):
+            raise Exception("Not a valid transaction hash %s" % api_info)
+        if query == 'info':
+            return self.driver.get_tx_by_hash(api_info)
+        else:
+            raise Exception('No such tx api')
+
+    def handle_address_api(self, api_info, query):
+        if not is_address(api_info):
+            raise Exception("Not a valid address %s" % api_info)
+        if query == 'info':
+            return self.driver.get_info_by_addr(api_info)
+        else:
+            raise Exception('No such address api')

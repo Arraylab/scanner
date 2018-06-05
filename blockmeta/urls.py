@@ -1,37 +1,42 @@
 # -*- coding: utf-8 -*-
 from flask_restful import Api
 
-import blockmeta.address.api
-import blockmeta.block.api
-import blockmeta.search.api
-import blockmeta.tx.api
-import blockmeta.stat.api
-import blockmeta.odin.api
-import blockmeta.asset.api
+import address
+import asset
+import block
+import odin
+import search
+import service
+import stat
+import tx
+
 
 # modules = [(handle, urls, args)]
 MODULES = [
-    (blockmeta.address.api.AddressAPI, ('/api/address/<string:address>',), {'endpoint': 'address'}),
+    (address.api.AddressAPI, ('/api/address/<string:address>',), {'endpoint': 'address'}),
 
-    (blockmeta.tx.api.TxAPI, ('/api/tx/<string:tx_hash>',), {'endpoint': 'tx'}),
-    (blockmeta.tx.api.TxListAPI, ('/api/txs',), {'endpoint': 'txs'}),
+    (tx.api.TxAPI, ('/api/tx/<string:tx_hash>',), {'endpoint': 'tx'}),
+    (tx.api.TxListAPI, ('/api/txs',), {'endpoint': 'txs'}),
 
-    (blockmeta.block.api.BlockAPI, ('/api/block/<string:block_id>',), {'endpoint': 'block'}),
-    (blockmeta.block.api.BlockListAPI, ('/api/blocks',), {'endpoint': 'blocks'}),
+    (block.api.BlockAPI, ('/api/block/<string:block_id>',), {'endpoint': 'block'}),
+    (block.api.BlockListAPI, ('/api/blocks',), {'endpoint': 'blocks'}),
 
-    (blockmeta.search.api.SearchAPI, ('/api/search',), {'endpoint': 'search'}),
+    (search.api.SearchAPI, ('/api/search',), {'endpoint': 'search'}),
 
-    (blockmeta.stat.api.ChainStatsAPI, ('/api/chain-stats',), {'endpoint': 'chain-stats'}),
-    (blockmeta.stat.api.NodeStatsAPI, ('/api/node-stats',), {'endpoint': 'node-stats'}),
+    (stat.api.ChainStatsAPI, ('/api/chain-stats',), {'endpoint': 'chain-stats'}),
+    (stat.api.NodeStatsAPI, ('/api/node-stats',), {'endpoint': 'node-stats'}),
 
-    (blockmeta.odin.api.OdinAPI, ('/api/odin',), {'endpoint': 'odin'}),
+    (odin.api.OdinAPI, ('/api/odin',), {'endpoint': 'odin'}),
 
-    (blockmeta.asset.api.AssetAPI, ('/api/asset/<string:asset_id>',), {'endpoint': 'asset'}),
-    (blockmeta.asset.api.AssetListAPI, ('/api/assets',), {'endpoint': 'assets'})
+    (asset.api.AssetAPI, ('/api/asset/<string:asset_id>',), {'endpoint': 'asset'}),
+    (asset.api.AssetListAPI, ('/api/assets',), {'endpoint': 'assets'}),
 
 
     # Service API
-    (service.BitcoinChainAPI,     ('/api/v1/btc/chain/<string:chain_api>',),      {'endpoint': 'chain_api'})
+    (service.api.BytomChainAPI, ('/api/v1/chain/<string:chain_api>',), {'endpoint': 'chain_api'}),
+    (service.api.BytomBlockAPI, ('/api/v1/block/<string:chain_api>',), {'endpoint': 'block_api'}),
+    (service.api.BytomAddressAPI, ('/api/v1/address/<string:chain_api>',), {'endpoint': 'address_api'}),
+    (service.api.BytomTxAPI, ('/api/v1/tx/<string:chain_api>',), {'endpoint': 'tx_api'}),
 ]
 
 

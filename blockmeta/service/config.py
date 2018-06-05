@@ -1,18 +1,12 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 
 class BytomConf:
-    CHAIN_APIS = ['getdifficulty', 'getblockcount', 'lastblockhash', 'reward',
-                  'totalbtc', 'avgtxnum', 'interval', 'hashrate', 'nextdifficulty',
-                  'unconfirmedcount', 'chainsize', 'lastminer', '24hrpoolstat',
-                  '24hrblockcount', 'ticker']
+    CHAIN_APIS = ['getdifficulty', 'getblockcount', 'reward', 'lastinterval', 'lastminer', 'totalbtm', 'totaltxnum', 'totaladdrnum']
 
-    BLOCK_APIS = ['info', 'tx']
+    BLOCK_APIS = ['info', ]
 
     TX_APIS = ['info', ]
 
     ADDR_APIS = ['info', 'unconfirmed', 'unspent']
 
-    MISC_APIS = ['hashtoaddress', 'addresstohash', 'difftonethash', 'nethashtodiff',
-                 'nbitstodiff', 'difftonbits', 'pushtx']

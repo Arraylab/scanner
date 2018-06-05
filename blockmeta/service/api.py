@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from flask.ext.restful import Resource, reqparse
@@ -22,6 +21,7 @@ class BytomBaseAPI(Resource):
         self.parser.add_argument('q', type=str, help='query info', ignore=True)
         super(BytomBaseAPI, self).__init__()
 
+
 class BytomChainAPI(BytomBaseAPI):
     def __init__(self):
         self.apis = BytomConf.CHAIN_APIS
@@ -40,3 +40,75 @@ class BytomChainAPI(BytomBaseAPI):
         except Exception, e:
             self.logger.error("BytomChainAPI.get Error: %s" % str(e))
             return util.wrap_error_response("无效的Chain API参数")
+
+
+class BytomBlockAPI(BytomBaseAPI):
+
+    def __init__(self):
+        self.apis = BytomConf.BLOCK_APIS
+        super(BytomBlockAPI, self).__init__()
+
+    def get(self, block_api):
+        try:
+            if block_api is None:
+                raise Exception("void query info")
+
+            args = self.parser.parse_args()
+            query = args.get('q', self.apis[0])
+
+            if query not in self.apis:
+                raise Exception("Not a valid block API")
+
+            result = self.manager.handle_block_api(block_api.lower(), query)
+            return util.wrap_response(data=result)
+        except Exception, e:
+            self.logger.error("BytomBlockAPI.get Error: %s" % str(e))
+            return util.wrap_error_response("无效的Block API参数")
+
+
+class BytomTxAPI(BytomBaseAPI):
+
+    def __init__(self):
+        self.apis = BytomConf.TX_APIS
+        super(BytomTxAPI, self).__init__()
+
+    def get(self, tx_api):
+        try:
+            if tx_api is None:
+                raise Exception("void query info")
+
+            args = self.parser.parse_args()
+            query = args.get('q', self.apis[0])
+
+            if query not in self.apis:
+                raise Exception("Not a valid Tx API")
+
+            result = self.manager.handle_tx_api(tx_api.lower(), query)
+            return util.wrap_response(data=result)
+        except Exception, e:
+            self.logger.error("BytomTxAPI.get Error: %s" % str(e))
+            return util.wrap_error_response("无效的Tx API参数")
+
+
+class BytomAddressAPI(BytomBaseAPI):
+
+    def __init__(self):
+        self.apis = BytomConf.ADDR_APIS
+        super(BytomAddressAPI, self).__init__()
+
+    def get(self, addr_api):
+        try:
+            if addr_api is None:
+                raise Exception("void query info")
+
+            args = self.parser.parse_args()
+            query = args.get('q', self.apis[0])
+
+            if query not in self.apis:
+                raise Exception("Not a valid Address API")
+
+            result = self.manager.handle_address_api(addr_api.lower(), query)
+            return util.wrap_response(data=result)
+        except Exception, e:
+            self.logger.error("BytomAddressAPI.get Error: %s" % str(e))
+            return util.wrap_error_response("无效的Address API参数")
