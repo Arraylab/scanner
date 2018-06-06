@@ -1,18 +1,38 @@
 # -*- coding: utf-8 -*-
 
-from blockmeta.db.mongo import MongodbClient
+from mongo import MongodbClient
 from tools import exception, flags
-import sys
 
 FLAGS = flags.FLAGS
 
 
-class DbProxy(object):
+class MongoProxy(object):
 
     def __init__(self):
         self.mongo_cli = MongodbClient(host=FLAGS.mongo_bytom_host, port=FLAGS.mongo_bytom_port)
-        self.mongo_cli.use_db(flags.FLAGS.mongo_bytom)
+        self.mongo_cli.use_db(FLAGS.mongo_bytom)
 
+    '''
+        table information, including address, block, transaction etc.
+    '''
+    def get_address_info(self, address):
+        addr_info = self.mongo_cli.get_one(table=FLAGS.address_info, cond={FLAGS.address: address}, fields={'_id': 0})
+        return addr_info
+
+    def get_block_info(self, b_id):
+        if isinstance(id, int):
+            block_info = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: b_id}, fields={'_id': 0})
+        else:
+            block_info = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_id: b_id}, fields={'_id': 0})
+        return block_info
+
+    def get_tx_info(self, tx_hash):
+        tx_info = self.mongo_cli.get_one(table=FLAGS.transaction_info, cond={FLAGS.tx_id: tx_hash}, fields={'_id': 0})
+        return tx_info
+
+    '''
+        misc, about block, transaction and address 
+    '''
     def get_recent_height(self):
         try:
             state = self.mongo_cli.get(flags.FLAGS.db_status)
@@ -20,7 +40,6 @@ class DbProxy(object):
             raise exception.DBError(e)
         return None if state is None else state[flags.FLAGS.block_height]
 
-    # TODO 索引
     def get_block_by_height(self, height):
         return self.mongo_cli.get_one(flags.FLAGS.block_info, {'height': height})
 
@@ -33,15 +52,58 @@ class DbProxy(object):
             difficulty = self.mongo_cli.get_one(FLAGS.block_info, {'height': height}, fields={'difficulty': 1, '_id': 0})
         except Exception as e:
             raise exception.DBError(e)
-        return difficulty
+        return difficulty.get('difficulty')
 
     def get_difficulty_by_height(self, height):
         try:
             difficulty = self.mongo_cli.get_one(FLAGS.block_info, {'height': height}, fields={'difficulty': 1, '_id': 0})
         except Exception as e:
             raise exception.DBError(e)
-        return difficulty
+        return difficulty.get('difficulty')
 
+    def get_latest_block_miner(self):
+        height = self.get_recent_height()
+        try:
+            miner = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: height}, fields={'miner': 1, '_id': 0})
+        except Exception as e:
+            raise exception.DBError(e)
+        return miner.get('miner')
+
+    def get_recent_award(self):
+        height = self.get_recent_height()
+        if height < 0:
+            return None
+        s = height / 840000
+        return 41250000000 / (s + 1)
+
+    def get_last_block_interval(self):
+        height = self.get_recent_height()
+        if height < 1:
+            return None
+        last_height = height - 1
+        try:
+            time = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: height}, fields={'timestamp': 1, '_id': 0})
+            last_time = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: last_height}, fields={'timestamp': 1, '_id': 0})
+            interval = time.get('timestamp') - last_time.get('timestamp')
+        except Exception as e:
+            raise exception.DBError(e)
+        return interval
+
+
+    '''
+        total number of address and transaction
+    '''
+    def get_total_tx_num(self):
+        total_num = self.mongo_cli.count(FLAGS.transaction_info)
+        return total_num
+
+    def get_total_addr_num(self):
+        total_num = self.mongo_cli.count(FLAGS.address_info)
+        return total_num
+
+    '''
+        scope, range by block height
+    '''
     def get_hash_rate_in_range(self, start, end):
         try:
             hash_rates = self.mongo_cli.get_many(
@@ -66,15 +128,20 @@ class DbProxy(object):
             raise exception.DBError(e)
         return timestamps
 
-    def get_status(self):
+    def get_transactions_in_range(self, low, high):
         try:
-            state = self.mongo_cli.get_one(
-                    table=FLAGS.chain_status, cond={
-                        FLAGS.block_height: 0})
+            coinbase = self.mongo_cli.get_many(
+                table=FLAGS.block_info,
+                items={"transactions": 1, "_id": 0},
+                n=high - low,
+                skip=low)
         except Exception as e:
             raise exception.DBError(e)
-        return None if state is None else state
+        return coinbase
 
+    '''
+        stats of chain & node
+    '''
     def get_chain_stats_list(self):
         try:
             stats = self.mongo_cli.get_many(table=FLAGS.chain_status)
@@ -101,52 +168,3 @@ class DbProxy(object):
             raise exception.DBError(e)
         return stats
 
-    def get_transactions_in_range(self, low, high):
-        try:
-            coinbase = self.mongo_cli.get_many(
-                table=FLAGS.block_info,
-                items={"transactions": 1, "_id": 0},
-                n=high - low,
-                skip=low)
-        except Exception as e:
-            raise exception.DBError(e)
-        return coinbase
-
-    def get_total_tx_num(self):
-        try:
-            total_num = self.mongo_cli.count(FLAGS.transaction_info)
-        except Exception as e:
-            raise exception.DBError(e)
-        return total_num
-
-    def get_total_addr_num(self):
-        try:
-            total_num = self.mongo_cli.count(FLAGS.address_info)
-        except Exception as e:
-            raise exception.DBError(e)
-        return total_num
-
-    def get_total_btm(self):
-        init_btm = 140700041250000000
-        init_award = 41250000000
-        epoch_length = 840000
-        current_height = self.get_recent_height()
-        epoch = current_height // epoch_length
-
-        total_num = 0
-        for n in range(epoch + 1):
-            award = init_award / (n + 1)
-            total_num += award * (current_height - n * epoch_length)
-
-        total_num += init_btm
-        return total_num
-
-
-if __name__ == '__main__':
-    FLAGS(sys.argv)
-    db = DbProxy()
-    print db.request_node_status()
-    print
-    print db.get_chain_stats_list()
-    print
-    print db.get_node_stats_list()

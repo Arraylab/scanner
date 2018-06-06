@@ -3,7 +3,7 @@
 from flask import current_app
 
 from blockmeta.db.mongo import MongodbClient
-from blockmeta.service.driver.bytom.builtin import BuiltinDriver as ServiceDriver
+from blockmeta.utils.bytom import get_total_btm
 from tools import flags
 
 FLAGS = flags.FLAGS
@@ -42,17 +42,19 @@ class BuiltinDriver:
             return None
         # fields = ['rank', 'address', 'balance', 'percentage', 'tx_count']
 
-        driver = ServiceDriver()
-        total_btm = driver.get_total_btm()
+        height = self.mongo_cli.get_one(FLAGS.db_status).get('height')
+        total_btm = get_total_btm(height)
 
         result = []
         for n in range(len(lists)):
-            info = {}
-            info['rank'] = n + 1
-            info['address'] = lists[n]['address']
-            info['balance'] = lists[n]['balance']
-            info['percentage'] = float(info['balance']) / total_btm * 100
-            info['tx_count'] = len(lists[n]['txs'])
+            bal = lists[n]['balance']
+            info = {
+                'rank': n + 1,
+                'address': lists[n]['address'],
+                'balance': bal,
+                'percentage': float(bal) / total_btm,
+                'tx_count': len(lists[n]['txs'])
+            }
             result.append(info)
         return result
 

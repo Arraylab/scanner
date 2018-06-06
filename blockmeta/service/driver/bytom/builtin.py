@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from blockmeta.db.mongo import MongodbClient
+from blockmeta.db.dbproxy import MongoProxy
+from blockmeta.utils.bytom import get_total_btm
 from flask import current_app
-from tools import flags, exception
+from tools import flags
 
 FLAGS = flags.FLAGS
 
@@ -14,114 +15,41 @@ class BuiltinDriver:
 
     def __init__(self):
         self.logger = current_app.logger
-        self.mongo_cli = MongodbClient(
-            host=FLAGS.mongo_bytom_host,
-            port=FLAGS.mongo_bytom_port)
-        self.mongo_cli.use_db(FLAGS.mongo_bytom)
+        self.proxy = MongoProxy()
 
     def get_block_count(self):
-        try:
-            state = self.mongo_cli.get(FLAGS.db_status)
-        except Exception as e:
-            raise exception.DBError(e)
-        return None if state is None else state[flags.FLAGS.block_height]
+        return self.proxy.get_recent_height()
 
     def get_difficulty(self):
-        try:
-            height = self.get_block_count()
-            difficulty = self.mongo_cli.get_one(table=FLAGS.block_info, cond={
-                    FLAGS.block_height: height}, fields={'difficulty': 1, '_id': 0})
-        except Exception as e:
-            raise exception.DBError(e)
-        return difficulty.get('difficulty', -1)
+        return self.proxy.get_difficulty()
 
     def get_recent_award(self):
-        height = self.get_block_count()
-        if height < 0:
-            return None
-        s = height / 840000
-        return 41250000000 / (s + 1)
+        return self.proxy.get_recent_award()
 
     def get_last_block_interval(self):
-        height = self.get_block_count()
-        if height < 1:
-            return None
-        last_height = height - 1
-        try:
-            time = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: height}, fields={'timestamp': 1, '_id': 0})
-            last_time = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: last_height}, fields={'timestamp': 1, '_id': 0})
-            interval = time - last_time
-        except Exception as e:
-            raise exception.DBError(e)
-        return interval
+        return self.proxy.get_last_block_interval()
 
     def get_latest_block_miner(self):
-        height = self.get_block_count()
-        try:
-            miner = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: height}, fields={'miner': 1, '_id': 0})
-        except Exception as e:
-            raise exception.DBError(e)
-        return miner
+        return self.proxy.get_latest_block_miner()
 
-    def get_total_tx_num(self):
-        try:
-            total_num = self.mongo_cli.count(FLAGS.transaction_info)
-        except Exception as e:
-            raise exception.DBError(e)
-        return total_num
+    def get_tx_total_num(self):
+        return self.proxy.get_total_tx_num()
 
-    def get_total_addr_num(self):
-        try:
-            total_num = self.mongo_cli.count(FLAGS.address_info)
-        except Exception as e:
-            raise exception.DBError(e)
-        return total_num
+    def get_addr_total_num(self):
+        return self.proxy.get_total_addr_num()
 
-    def get_total_btm(self):
-        init_btm = 140700041250000000
-        init_award = 41250000000
-        epoch_length = 840000
-        current_height = self.get_block_count()
-        epoch = current_height // epoch_length
-
-        total_num = 0
-        for n in range(epoch + 1):
-            award = init_award / (n + 1)
-            total_num += award * (current_height - n * epoch_length)
-
-        total_num += init_btm
-        return total_num
+    def get_btm_total_num(self):
+        h = self.proxy.get_recent_height()
+        return get_total_btm(h)
 
     def get_block_by_height(self, height):
-        try:
-            block_info = self.mongo_cli.get_one(
-                table=FLAGS.block_info, cond={
-                    FLAGS.block_height: int(height)}, fields={'_id': 0})
-        except Exception as e:
-            raise exception.DBError(e)
-        return block_info
+        return self.proxy.get_block_info(height)
 
-    def get_block_by_hash(self, hash):
-        try:
-            block_info = self.mongo_cli.get_one(
-                table=FLAGS.block_info, cond={
-                    FLAGS.block_id: hash}, fields={'_id': 0})
-        except Exception as e:
-            raise exception.DBError(e)
-        return block_info
+    def get_block_by_hash(self, hash_):
+        return self.proxy.get_block_info(hash_)
 
-    def get_tx_by_hash(self, hash):
-        try:
-            tx_info = self.mongo_cli.get_one(
-                table=FLAGS.transaction_info, cond={
-                    FLAGS.tx_id: hash}, fields={'_id': 0})
-        except Exception as e:
-            raise exception.DBError(e)
-        return tx_info
+    def get_tx_by_hash(self, hash_):
+        return self.proxy.get_tx_info(hash_)
 
     def get_info_by_addr(self, address):
-        try:
-            info = self.mongo_cli.get_one(table=FLAGS.address_info, cond={FLAGS.address: address}, fields={'_id': 0})
-        except Exception as e:
-            raise exception.DBError(e)
-        return info
+        return self.proxy.get_address_info(address)

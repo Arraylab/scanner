@@ -23,11 +23,11 @@ class ServiceManager(object):
         if query == 'lastminer':
             return self.driver.get_latest_block_miner()
         if query == 'totalbtm':
-            return self.driver.get_total_btm()
+            return self.driver.get_btm_total_num()
         if query == 'totaltxnum':
-            return self.driver.get_total_tx_num()
+            return self.driver.get_tx_total_num()
         if query == 'totaladdrnum':
-            return self.driver.get_total_addr_num()
+            return self.driver.get_addr_total_num()
         else:
             raise Exception('No such Chain api')
 

@@ -5,6 +5,7 @@ import address
 import asset
 import block
 import odin
+import rank
 import search
 import service
 import stat
@@ -30,6 +31,8 @@ MODULES = [
 
     (asset.api.AssetAPI, ('/api/asset/<string:asset_id>',), {'endpoint': 'asset'}),
     (asset.api.AssetListAPI, ('/api/assets',), {'endpoint': 'assets'}),
+
+    (rank.api.RankAPI, ('/api/rank',), {'endpoint': 'rank'}),
 
 
     # Service API

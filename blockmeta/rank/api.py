@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask.ext.restful import Resource, reqparse
+from flask.ext.restful import Resource
 from flask import current_app
 from blockmeta.utils import util
 from manager import RankManager

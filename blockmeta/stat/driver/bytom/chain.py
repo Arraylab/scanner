@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from proxy import DbProxy
 from tools import flags
+from blockmeta.db.dbproxy import MongoProxy
+from blockmeta.utils.bytom import get_total_btm
 import threading
-import time
+
 
 FLAGS = flags.FLAGS
 DEFAULT_ASSET_ID = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
@@ -14,7 +15,7 @@ STATS_NUMBER = 600
 class ChainStats(object):
 
     def __init__(self):
-        self.proxy = DbProxy()
+        self.proxy = MongoProxy()
 
     # 上一个区块的出块间隔
     def get_last_block_interval(self, height):
@@ -33,8 +34,6 @@ class ChainStats(object):
             return None
         block = self.proxy.get_block_by_height(height)
         return block.get(FLAGS.difficulty)
-
-    # 指定高度块的hash rate
 
     # 前N个块的平均hash rate
     def get_average_hash_rate(self, height, num):
@@ -131,61 +130,6 @@ class ChainStats(object):
         intervals.sort()
         return intervals
 
-    # 最近24小时内出块总数、平均时间、中位数、最大、最小; 交易总数、平均区块费用、平均交易费用、平均hash rate
-    # def get_chain_status(self):
-    #     ticks = int(time.time())
-    #     recent_height = self.proxy.get_recent_height()
-    #     block = self.proxy.get_block_by_height(recent_height)
-    #     recent_timestamp = block['timestamp']
-    #     block_hash = block['hash']
-    #     if recent_timestamp + 86400 < ticks:
-    #         return []
-    #
-    #     close_height = recent_height - 576
-    #     close_time = self.proxy.get_block_by_height(close_height)['timestamp']
-    #     if ticks - close_time < 86400:
-    #         while ticks - close_time < 86400:
-    #             close_height -= 1
-    #             close_time = self.proxy.get_block_by_height(close_height)['timestamp']
-    #     else:
-    #         while ticks - close_time >= 86400:
-    #             close_height += 1
-    #             close_time = self.proxy.get_block_by_height(close_height)['timestamp']
-    #
-    #     # 所有块时间戳
-    #     tps = self.proxy.get_timestamps_in_range(close_height, recent_height)
-    #     timestamps = [t['timestamp'] for t in tps]
-    #
-    #     total_block_num = recent_height - close_height
-    #     timestamps.sort()
-    #     average_block_time = 86400 / total_block_num
-    #
-    #     #  24小时内出块总数、平均时间、中位数、最大、最小
-    #     intervals = self.get_interval(timestamps)
-    #     length = len(intervals)
-    #     median_interval = (intervals[length / 2] + intervals[length / 2 - 1]) / 2 if length % 2 == 0 else intervals[
-    #         (length + 1) / 2]
-    #     tx_num_24 = self.get_tx_num(recent_height, total_block_num) * total_block_num
-    #     block_fee_24 = self.get_block_fee(recent_height, total_block_num)
-    #     hash_rate_24 = self.get_average_hash_rate(recent_height, total_block_num)
-    #     tx_fee_24 = self.get_average_txs_fee_n(recent_height, total_block_num)
-    #
-    #     result = {
-    #         "height": recent_height,
-    #         "block_hash": block_hash,
-    #         "timestamp": recent_timestamp,
-    #         "hash_rate": hash_rate_24,
-    #         "block_num": total_block_num,
-    #         "tx_num": tx_num_24,
-    #         "average_block_fee": block_fee_24,
-    #         "average_tx_fee": tx_fee_24,
-    #         "average_block_interval": average_block_time,
-    #         "median_block_interval": median_interval,
-    #         "max_block_interval": intervals[-1],
-    #         "min_block_interval": intervals[0]
-    #     }
-    #     return result
-
     def get_real_time_data(self):
         height = self.proxy.get_recent_height()
         block_hash = self.proxy.get_block_hash_by_height(height).get('hash')
@@ -209,7 +153,7 @@ class ChainStats(object):
 
         total_tx_num = self.proxy.get_total_tx_num()
         total_addr_num = self.proxy.get_total_addr_num()
-        total_btm_num = self.proxy.get_total_btm()
+        total_btm_num = get_total_btm(height)
 
         avg_block_fee = self.get_block_fee(height, STATS_NUMBER)
         avg_tx_fee = avg_block_fee * STATS_NUMBER / (tx_num - STATS_NUMBER)
@@ -226,7 +170,8 @@ class ChainStats(object):
             "total_addr_num": total_addr_num,
             "total_btm_num": total_btm_num,
             "block_fee_avg": avg_block_fee,
-            "tx_fee_avg": avg_tx_fee
+            "tx_fee_avg": avg_tx_fee,
+            "tps_avg": tps
         }
         return result
 
