@@ -22,7 +22,7 @@ class BuiltinDriver:
             host=FLAGS.mongo_bytom_host,
             port=FLAGS.mongo_bytom_port)
         self.mongo_cli.use_db(FLAGS.mongo_bytom)
-        # self.block_manager = BlockManager()
+        self.block_manager = BlockManager()
 
     def request_tx_info(self, tx_hash):
         try:

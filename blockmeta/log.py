@@ -16,10 +16,10 @@ def init_log(app):
     log_path = os.path.join(log_dir, '%s.log' % app.name)
 
     sh = logging.StreamHandler()
-    sh.setLevel(logging.ERROR)
+    sh.setLevel(logging.INFO)
     sh.setFormatter(formatter)
 
-    fh = RotatingFileHandler(log_path, maxBytes=10000000, backupCount=10)
+    fh = RotatingFileHandler(log_path, maxBytes=1000000, backupCount=10)
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
 

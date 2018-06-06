@@ -8,5 +8,5 @@ class BytomConf:
 
     TX_APIS = ['info', ]
 
-    ADDR_APIS = ['info', 'unconfirmed', 'unspent']
+    ADDR_APIS = ['info', ]
 

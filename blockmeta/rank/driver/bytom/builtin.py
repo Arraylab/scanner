@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from flask import current_app
-
 from blockmeta.db.mongo import MongodbClient
 from blockmeta.utils.bytom import get_total_btm
 from tools import flags
@@ -15,7 +13,6 @@ class BuiltinDriver:
         return 'builtin'
 
     def __init__(self):
-        self.logger = current_app.logger
         self.mongo_cli = MongodbClient(
             host=FLAGS.mongo_bytom_host,
             port=FLAGS.mongo_bytom_port)
@@ -25,7 +22,7 @@ class BuiltinDriver:
     def get_rank_address(self):
         address_info = self.mongo_cli.get_many(
             table=FLAGS.address_info,
-            n=1000,
+            n=100,
             items={
                 'address': 1,
                 'balance': 1,
@@ -40,9 +37,8 @@ class BuiltinDriver:
     def _show_rank_info(self, lists):
         if not isinstance(lists, list):
             return None
-        # fields = ['rank', 'address', 'balance', 'percentage', 'tx_count']
 
-        height = self.mongo_cli.get_one(FLAGS.db_status).get('height')
+        height = self.mongo_cli.get(FLAGS.db_status).get('height')
         total_btm = get_total_btm(height)
 
         result = []

@@ -20,7 +20,7 @@ class MongoProxy(object):
         return addr_info
 
     def get_block_info(self, b_id):
-        if isinstance(id, int):
+        if isinstance(b_id, int):
             block_info = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_height: b_id}, fields={'_id': 0})
         else:
             block_info = self.mongo_cli.get_one(table=FLAGS.block_info, cond={FLAGS.block_id: b_id}, fields={'_id': 0})
@@ -121,8 +121,6 @@ class MongoProxy(object):
                 table=FLAGS.block_info,
                 items={"timestamp": 1, "_id": 0},
                 n=end-start,
-                sort_key='timestamp',
-                ascend=True,
                 skip=start)
         except Exception as e:
             raise exception.DBError(e)

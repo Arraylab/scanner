@@ -37,9 +37,9 @@ MODULES = [
 
     # Service API
     (service.api.BytomChainAPI, ('/api/v1/chain/<string:chain_api>',), {'endpoint': 'chain_api'}),
-    (service.api.BytomBlockAPI, ('/api/v1/block/<string:chain_api>',), {'endpoint': 'block_api'}),
-    (service.api.BytomAddressAPI, ('/api/v1/address/<string:chain_api>',), {'endpoint': 'address_api'}),
-    (service.api.BytomTxAPI, ('/api/v1/tx/<string:chain_api>',), {'endpoint': 'tx_api'}),
+    (service.api.BytomBlockAPI, ('/api/v1/block/<string:block_api>',), {'endpoint': 'block_api'}),
+    (service.api.BytomAddressAPI, ('/api/v1/address/<string:address_api>',), {'endpoint': 'address_api'}),
+    (service.api.BytomTxAPI, ('/api/v1/tx/<string:tx_api>',), {'endpoint': 'tx_api'}),
 ]
 
 

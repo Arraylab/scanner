@@ -2,6 +2,7 @@
 
 from flask_restful import Resource, reqparse, abort
 from flask import current_app
+
 from blockmeta.redis_cli_conf import cache, cache_key
 from blockmeta.utils.bytom import remove_0x
 from blockmeta.utils.util import valid_addr

@@ -96,9 +96,9 @@ class BytomAddressAPI(BytomBaseAPI):
         self.apis = BytomConf.ADDR_APIS
         super(BytomAddressAPI, self).__init__()
 
-    def get(self, addr_api):
+    def get(self, address_api):
         try:
-            if addr_api is None:
+            if address_api is None:
                 raise Exception("void query info")
 
             args = self.parser.parse_args()
@@ -107,7 +107,7 @@ class BytomAddressAPI(BytomBaseAPI):
             if query not in self.apis:
                 raise Exception("Not a valid Address API")
 
-            result = self.manager.handle_address_api(addr_api.lower(), query)
+            result = self.manager.handle_address_api(address_api.lower(), query)
             return util.wrap_response(data=result)
         except Exception, e:
             self.logger.error("BytomAddressAPI.get Error: %s" % str(e))

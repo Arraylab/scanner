@@ -79,11 +79,11 @@ class ChainStats(object):
     def get_block_fee(self, height, num):
         if height - num <= 0 or height <= 0 or num <= 0:
             return None
-        transactions = self.proxy.get_transactions_in_range(height-num, height+1)
+        transactions = self.proxy.get_transactions_in_range(height-num, height)
         coinbases = [t['transactions'][0] for t in transactions]
         fees = [c['outputs'][0]['amount'] for c in coinbases]
         award = 0
-        for h in range(height-num, height+1):
+        for h in range(height-num+1, height+1):
             award += self.get_recent_award(height)
         return (sum(fees) - award) / num
 
@@ -123,12 +123,33 @@ class ChainStats(object):
     def get_interval(timestamps):
         if not isinstance(timestamps, list):
             return None
+        timestamps.sort()
+        time_lapse = timestamps[-1] - timestamps[0]
+
+
         intervals = []
         for i in range(len(timestamps) - 1):
             interval = timestamps[i + 1] - timestamps[i]
             intervals.append(interval)
         intervals.sort()
-        return intervals
+        intervals_map = {
+            "interval_avg": time_lapse / (STATS_NUMBER - 1),
+            "interval_max": intervals[-1],
+            "interval_min": intervals[0],
+            "interval_med": intervals[STATS_NUMBER / 2]
+        }
+        return intervals_map
+
+    def get_total_num(self, height):
+        total_btm_num = get_total_btm(height)
+        total_addr_num = self.proxy.get_total_addr_num()
+        total_tx_num = self.proxy.get_total_tx_num()
+        total = {
+            "total_btm_num": total_btm_num,
+            "total_addr_num": total_addr_num,
+            "total_tx_num": total_tx_num
+        }
+        return total
 
     def get_real_time_data(self):
         height = self.proxy.get_recent_height()
@@ -137,23 +158,15 @@ class ChainStats(object):
 
         time_map = self.proxy.get_timestamps_in_range(height-STATS_NUMBER, height)
         timestamps = [t['timestamp'] for t in time_map]
+        timestamps.sort()
         time_lapse = timestamps[-1] - timestamps[0]
 
         intervals = self.get_interval(timestamps)
-        if intervals is None:
-            return None
-
-        avg_interval = time_lapse / (STATS_NUMBER - 1)
-        max_interval = intervals[-1]
-        min_interval = intervals[0]
-        med_interval = intervals[STATS_NUMBER / 2]
 
         tx_num = self.get_tx_num_between(height-STATS_NUMBER, height)
         tps = '%.2f' % (float(tx_num) / time_lapse)
 
-        total_tx_num = self.proxy.get_total_tx_num()
-        total_addr_num = self.proxy.get_total_addr_num()
-        total_btm_num = get_total_btm(height)
+        total_num = self.get_total_num(height)
 
         avg_block_fee = self.get_block_fee(height, STATS_NUMBER)
         avg_tx_fee = avg_block_fee * STATS_NUMBER / (tx_num - STATS_NUMBER)
@@ -162,13 +175,8 @@ class ChainStats(object):
             "height": height,
             "block_hash": block_hash,
             "difficulty": difficulty,
-            "interval_avg": avg_interval,
-            "interval_min": min_interval,
-            "interval_max": max_interval,
-            "interval_med": med_interval,
-            "total_tx_num": total_tx_num,
-            "total_addr_num": total_addr_num,
-            "total_btm_num": total_btm_num,
+            "intervals": intervals,
+            "total_num": total_num,
             "block_fee_avg": avg_block_fee,
             "tx_fee_avg": avg_tx_fee,
             "tps_avg": tps

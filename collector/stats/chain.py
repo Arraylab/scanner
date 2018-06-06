@@ -71,7 +71,7 @@ class ChainStats(object):
         if height - num <= 0 or height <= 0 or num <= 0:
             return None
         transactions = self.proxy.get_transactions_in_range(
-            height - num, height + 1)
+            height - num, height)
         coinbases = [t['transactions'][0] for t in transactions]
         fees = [c['outputs'][0]['amount'] for c in coinbases]
         award = 0

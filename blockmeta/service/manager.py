@@ -38,9 +38,9 @@ class ServiceManager(object):
 
         if query == 'info':
             if tag == 'HASH':
-                return self.driver.get_block_by_hash(tag)
+                return self.driver.get_block_by_hash(api_info)
             else:
-                return self.driver.get_block_by_height(tag)
+                return self.driver.get_block_by_height(int(api_info))
         else:
             raise Exception('No such Block api')
 
