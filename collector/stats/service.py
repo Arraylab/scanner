@@ -22,8 +22,10 @@ class StatusService(object):
     def count(self):
         global timer
         start = time.time()
+
         self.chain_stats.save()
         self.node_stats.save()
+
         end = time.time()
         now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(end))
         self.logger.info('Stats end, cost %s sec, current time: %s' % (str(end-start), str(now)))
@@ -33,8 +35,10 @@ class StatusService(object):
     def start(self):
         self.logger.info('First stats starting')
         start = time.time()
+
         self.chain_stats.load()
         self.node_stats.save()
+
         end = time.time()
         now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(end))
         self.logger.info('First stats end, cost %s sec, current time: %s' % (str(end - start), str(now)))
