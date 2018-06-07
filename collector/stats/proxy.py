@@ -116,6 +116,34 @@ class DbProxy(object):
     def count_txs(self):
         return self.mongo_cli.count('transaction_info')
 
+    def get_total_tx_num(self):
+        try:
+            total_num = self.mongo_cli.count(FLAGS.transaction_info)
+        except Exception as e:
+            raise exception.DBError(e)
+        return total_num
+
+    def get_total_addr_num(self):
+        try:
+            total_num = self.mongo_cli.count(FLAGS.address_info)
+        except Exception as e:
+            raise exception.DBError(e)
+        return total_num
+
+    def get_total_btm(self, height):
+        init_btm = 140700041250000000
+        init_award = 41250000000
+        epoch_length = 840000
+        epoch = height // epoch_length
+
+        total_num = 0
+        for n in range(epoch + 1):
+            award = init_award / (n + 1)
+            total_num += award * (height - n * epoch_length)
+
+        total_num += init_btm
+        return total_num
+
 
 if __name__ == '__main__':
     FLAGS(sys.argv)

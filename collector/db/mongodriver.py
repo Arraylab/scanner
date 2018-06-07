@@ -55,8 +55,8 @@ class MongodbClient:
         rlist = list(res)
         return rlist[0] if rlist else None
 
-    def get_one(self, table, cond):
-        res = self.mc[table].find_one(cond)
+    def get_one(self, table, cond, fields=None):
+        res = self.mc[table].find_one(cond, fields)
         return res if res else None
 
     def get_many(self, table, cond={}, items=None, n=0, sort_key=None, ascend=True, skip=0):

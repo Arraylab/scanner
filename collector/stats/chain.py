@@ -24,7 +24,7 @@ class ChainStats(object):
         if height <= 0 or height is None:
             return None
         times = []
-        for h in range(height-1, height+1):
+        for h in range(height - 1, height + 1):
             block = self.proxy.get_block_by_height(h)
             time = block.get(FLAGS.timestamp)
             times.append(time)
@@ -37,24 +37,11 @@ class ChainStats(object):
         block = self.proxy.get_block_by_height(height)
         return block.get(FLAGS.difficulty)
 
-    # 指定高度块的hash rate
-
-    # 前N个块的平均hash rate
-    # def get_average_hash_rate(self, height, num):
-    #     if height - num <= 0 or height <= 0 or num <= 0 or height is None:
-    #         return None
-    #     sum = 0
-    #     for h in range(height-num, height+1):
-    #
-    #         hash_rate = response['data']['hash_rate']
-    #         sum += hash_rate
-    #     return sum / num
-
     # height高度前N个块的平均交易数
     def get_tx_num(self, height, num):
         if height - num <= 0 or height <= 0 or num <= 0:
             return None
-        ts = self.proxy.get_transactions_in_range(height-num, height+1)
+        ts = self.proxy.get_transactions_in_range(height - num, height + 1)
         transactions = [t['transactions'] for t in ts]
         sum = 0
         for txs in transactions:
@@ -83,11 +70,12 @@ class ChainStats(object):
     def get_block_fee(self, height, num):
         if height - num <= 0 or height <= 0 or num <= 0:
             return None
-        transactions = self.proxy.get_transactions_in_range(height-num, height+1)
+        transactions = self.proxy.get_transactions_in_range(
+            height - num, height)
         coinbases = [t['transactions'][0] for t in transactions]
         fees = [c['outputs'][0]['amount'] for c in coinbases]
         award = 0
-        for h in range(height-num, height+1):
+        for h in range(height - num, height + 1):
             award += self.get_recent_award(height)
         return (sum(fees) - award) / num
 
@@ -103,23 +91,21 @@ class ChainStats(object):
             total_out += btm_out
         return total_in - total_out
 
-    # 交易平均手续费（x neu/byte)
-    def get_average_txs_fee(self, height):
+    # 交易平均手续费（neu)
+    def get_txs_fee(self, height):
         block = self.proxy.get_block_by_height(height)
-        total_size = 0
         total_fee = 0
         for tx in block['transactions'][1:]:
-            total_size += tx['size']
             total_fee += self.cal_tx_fee(tx)
-        return 0 if total_size == 0 else total_fee / total_size
+        return total_fee
 
     # N个块的交易平均手续费, num表示某一高度height往前的N个块
     def get_average_txs_fee_n(self, height, num):
         if height - num <= 0 or num <= 0:
             return 0
         total_fee = 0
-        for h in range(height-num, height + 1):
-            f = self.get_average_txs_fee(h)
+        for h in range(height - num, height + 1):
+            f = self.get_txs_fee(h)
             total_fee += f
         return total_fee / num
 
@@ -127,20 +113,45 @@ class ChainStats(object):
     def get_interval(timestamps):
         if not isinstance(timestamps, list):
             return None
+        timestamps.sort()
+        avg_interval = (timestamps[-1] - timestamps[0]) / (len(timestamps) - 1)
         intervals = []
         for i in range(len(timestamps) - 1):
             interval = timestamps[i + 1] - timestamps[i]
             intervals.append(interval)
         intervals.sort()
-        return intervals
 
-    # 最近24小时内出块总数、平均时间、中位数、最大、最小; 交易总数、平均区块费用、平均交易费用、平均hash rate
+        length = len(intervals)
+        median_interval = (intervals[length / 2] + intervals[length / 2 - 1]) / \
+            2 if length % 2 == 0 else intervals[(length + 1) / 2]
+        intervals_map = {
+            "interval_avg": avg_interval,
+            "interval_max": intervals[-1],
+            "interval_min": intervals[0],
+            "interval_med": median_interval
+        }
+        return intervals_map
+
+    def get_total_num(self, height):
+        total_btm_num = self.proxy.get_total_btm(height)
+        total_addr_num = self.proxy.get_total_addr_num()
+        total_tx_num = self.proxy.get_total_tx_num()
+        total = {
+            "total_btm_num": total_btm_num,
+            "total_addr_num": total_addr_num,
+            "total_tx_num": total_tx_num
+        }
+        return total
+
+    # latest 24 hours
     def chain_status(self):
         ticks = int(time.time())
         recent_height = self.proxy.get_recent_height() - CONFIRM_NUM
         block = self.proxy.get_block_by_height(recent_height)
         recent_timestamp = block['timestamp']
+        difficulty = block['difficulty']
         block_hash = block['hash']
+
         if recent_timestamp + 86400 < ticks:
             return []
 
@@ -149,13 +160,14 @@ class ChainStats(object):
         if ticks - close_time < 86400:
             while ticks - close_time < 86400:
                 close_height -= 1
-                close_time = self.proxy.get_block_by_height(close_height)['timestamp']
+                close_time = self.proxy.get_block_by_height(close_height)[
+                    'timestamp']
         else:
             while ticks - close_time >= 86400:
                 close_height += 1
-                close_time = self.proxy.get_block_by_height(close_height)['timestamp']
+                close_time = self.proxy.get_block_by_height(close_height)[
+                    'timestamp']
 
-        # 所有块时间戳
         tps = self.proxy.get_timestamps_in_range(close_height, recent_height)
         timestamps = [t['timestamp'] for t in tps]
 
@@ -164,30 +176,24 @@ class ChainStats(object):
             timestamps.append(t)
         total_block_num = recent_height - close_height + CONFIRM_NUM
         timestamps.sort()
-        average_block_time = 86400 / total_block_num
 
-        #  24小时内出块总数、平均时间、中位数、最大、最小
         intervals = self.get_interval(timestamps)
-        length = len(intervals)
-        median_interval = (intervals[length / 2] + intervals[length / 2 - 1]) / 2 if length % 2 == 0 else intervals[
-            (length + 1) / 2]
-        tx_num_24 = self.get_tx_num(recent_height, total_block_num) * total_block_num
+        tx_num_24 = self.get_tx_num(
+            recent_height, total_block_num) * total_block_num
         block_fee_24 = self.get_block_fee(recent_height, total_block_num)
-        # hash_rate_24 = self.get_average_hash_rate(recent_height, total_num)
         tx_fee_24 = self.get_average_txs_fee_n(recent_height, total_block_num)
 
         result = {
             "height": recent_height,
             "block_hash": block_hash,
+            "difficulty": difficulty,
             "timestamp": recent_timestamp,
-            "block_num_24": total_block_num,
-            "tx_num_24": tx_num_24,
-            "block_fee_24": block_fee_24,
-            "tx_fee_24": tx_fee_24,
-            "average_block_interval": average_block_time,
-            "median_block_interval": median_interval,
-            "max_block_interval": intervals[-1],
-            "min_block_interval": intervals[0]
+            "24_block_num": total_block_num,
+            "24_tx_num": tx_num_24,
+            "24_block_fee_avg": block_fee_24,
+            "24_tx_fee_avg": tx_fee_24,
+            "intervals": intervals,
+            "total_num": self.get_total_num(recent_height)
         }
         return result
 
@@ -197,13 +203,14 @@ class ChainStats(object):
             return None
         recent_block = self.proxy.get_block_by_height(high)
         block_hash = recent_block['hash']
+        difficulty = recent_block['difficulty']
+
         recent_timestamp = recent_block['timestamp']
-        remote_timestamp = self.proxy.get_block_by_height(low)['timestamp']
         total_block_num = high - low
+
         block_fee = self.get_block_fee(high, total_block_num)
         total_tx_num = 0
         tx_fee = self.get_average_txs_fee_n(high, total_block_num)
-        average_block_interval = (recent_timestamp - remote_timestamp) / total_block_num
 
         timestamps = []
         for h in range(low, high):
@@ -213,28 +220,18 @@ class ChainStats(object):
             t = block['timestamp']
             timestamps.append(t)
         intervals = self.get_interval(timestamps)
-        length = len(intervals)
-        if length == 0:
-            median_interval = None
-            max_interval = None
-            min_interval = None
-        else:
-            median_interval = (intervals[length / 2] + intervals[length / 2 - 1]) / 2 if length % 2 == 0 else intervals[(length + 1) / 2]
-            max_interval = intervals[-1]
-            min_interval = intervals[0]
 
         result = {
             "height": high,
             "block_hash": block_hash,
+            "difficulty": difficulty,
             "timestamp": recent_timestamp,
-            "block_num_24": total_block_num,
-            "tx_num_24": total_tx_num,
-            "block_fee_24": block_fee,
-            "tx_fee_24": tx_fee,
-            "average_block_interval": average_block_interval,
-            "median_block_interval": median_interval,
-            "max_block_interval": max_interval,
-            "min_block_interval": min_interval
+            "24_block_num": total_block_num,
+            "24_tx_num": total_tx_num,
+            "24_block_fee_avg": block_fee,
+            "24_tx_fee_avg": tx_fee,
+            "intervals": intervals,
+            "total_num": self.get_total_num(high)
         }
         return result
 
@@ -256,14 +253,10 @@ class ChainStats(object):
         while not self.check_syn_height():
             time.sleep(10)
         recent_height = self.proxy.get_recent_height()
-        current_time = self.proxy.get_block_by_height(recent_height)['timestamp']
-
         genesis_time = self.proxy.get_block_by_height(0)['timestamp']
-        days = (current_time - genesis_time) / 86400
 
-        tps = self.proxy.get_timestamps_in_range(0, recent_height+1)
-        timestamps = [t['timestamp'] for t in tps]
-        timestamps.sort()
+        tps = self.proxy.get_timestamps_in_range(0, recent_height + 1)
+        timestamps = sorted([t['timestamp'] for t in tps])
 
         height_point = []
         point = genesis_time
@@ -274,7 +267,8 @@ class ChainStats(object):
             point = timestamps[i]
 
         result = []
-        jobs = [gevent.spawn(self._compute, result, height_point[i], height_point[i+1]) for i in range(len(height_point)-1)]
+        jobs = [gevent.spawn(self._compute, result, height_point[i],
+                             height_point[i + 1]) for i in range(len(height_point) - 1)]
         gevent.joinall(jobs)
         return result
 
@@ -289,14 +283,12 @@ class ChainStats(object):
             "height": 0,
             "block_hash": block['hash'],
             "timestamp": block['timestamp'],
-            "block_num_24": 1,
-            "tx_num_24": tx_num,
-            "block_fee_24": 0,
-            "tx_fee_24": 0,
-            "average_block_interval": 0,
-            "median_block_interval": 0,
-            "max_block_interval": 0,
-            "min_block_interval": 0
+            "24_block_num": 1,
+            "24_tx_num": tx_num,
+            "24_block_fee_avg": 0,
+            "24_tx_fee_avg": 0,
+            "intervals": {},
+            "total_num": {}
         }
         return initial_status
 

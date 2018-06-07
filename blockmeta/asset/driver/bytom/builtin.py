@@ -35,7 +35,7 @@ class BuiltinDriver:
         page_max = self.max_pages(asset_num)
         page = min(page, page_max)
         skip = (page - 1) * 10
-        asset_objects = self.mongo_cli. get_many(
+        asset_objects = self.mongo_cli.get_many(
             table=FLAGS.asset_info,
             cond={},
             n=10,

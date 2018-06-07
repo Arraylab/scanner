@@ -24,7 +24,7 @@ class Logger:
         if not os.path.exists(log_dir):
             os.mkdir(log_dir)
         log_path = os.path.join(log_dir, '%s.log' % file_name)
-        fh = RotatingFileHandler(log_path, maxBytes=10000000, backupCount=10)
+        fh = RotatingFileHandler(log_path, maxBytes=1000000, backupCount=10)
         fh.setLevel(flevel)
         fh.setFormatter(self.fmt)
         self.logger.addHandler(fh)

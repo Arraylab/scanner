@@ -432,3 +432,15 @@ class DbProxy:
         future_block = self.get_block_by_height(future_height)
         if future_block is not None:
             self.remove_highest_block(future_block)
+
+    # def get_difficulty(self):
+    #     difficulty = self.mongo_cli.get_one(table=flags.FLAGS.block_info, cond={
+    #         flags.FLAGS.block_height: 10000}, fields={'difficulty': 1, '_id': 0})
+    #     return difficulty
+
+
+if __name__ == "__main__":
+    import sys
+    flags.FLAGS(sys.argv)
+    d = DbProxy()
+    # print d.get_difficulty()

@@ -13,4 +13,4 @@ class BuiltinDriver:
         return self.node_stats.get_node_stats()
 
     def request_chain_status(self):
-        return self.chain_stats.get_chain_status()
+        return self.chain_stats.get_real_time_data()
